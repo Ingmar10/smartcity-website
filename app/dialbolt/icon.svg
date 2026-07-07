@@ -1,0 +1,14 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="db" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6B3FD0"/>
+      <stop offset="1" stop-color="#9F3FD8"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="12" fill="url(#db)"/>
+  <!-- signal / SMS arcs (the "Dial" cue) -->
+  <path d="M30 15a10 10 0 0 1 0 18" stroke="#fff" stroke-opacity="0.55" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  <path d="M33.5 11a15 15 0 0 1 0 26" stroke="#fff" stroke-opacity="0.3" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  <!-- bolt -->
+  <path d="M22 8 11 24.5h6.6L15.5 40l11.5-16.5h-6.7L22 8Z" fill="#fff"/>
+</svg>

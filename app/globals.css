@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand: #6b3fd0;
+    --brand-dark: #4a2ba0;
+    --brand-light: #9f6fe5;
+    --canvas: #f7f6fb;
+    --ink: #141019;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: var(--ink);
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+  }
+
+  ::selection {
+    background: rgba(107, 63, 208, 0.16);
+  }
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-6 md:px-8;
+  }
+
+  /* Apple-style oversized headline scale */
+  .display-1 {
+    @apply text-[clamp(2.75rem,7vw,5.25rem)] font-bold leading-[1.03] tracking-[-0.03em];
+  }
+  .display-2 {
+    @apply text-[clamp(2rem,4.5vw,3.5rem)] font-bold leading-[1.05] tracking-[-0.025em];
+  }
+  .eyebrow {
+    @apply text-sm font-semibold uppercase tracking-[0.14em] text-brand;
+  }
+  .lede {
+    @apply text-[clamp(1.125rem,1.9vw,1.5rem)] leading-relaxed text-subtle;
+  }
+
+  .text-gradient {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+
+  .section-pad {
+    @apply py-24 md:py-section;
+  }
+
+  .card {
+    @apply rounded-xl2 border border-black/5 bg-white shadow-[0_1px_2px_rgba(20,16,25,0.04),0_12px_40px_-12px_rgba(20,16,25,0.10)];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
