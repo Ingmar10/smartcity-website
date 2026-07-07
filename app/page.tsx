@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import AlternatingRow from "@/components/AlternatingRow";
 import ScrollReveal from "@/components/ScrollReveal";
 import CTAButton from "@/components/CTAButton";
+import PhoneShot from "@/components/Screenshot";
 
 export default function HomePage() {
   return (
@@ -48,6 +49,12 @@ export default function HomePage() {
                 "PDF proposals and a public customer-facing quote view",
               ]}
               cta={{ href: "/quotesmart", label: "Explore QuoteSmart" }}
+              visual={
+                <PhoneShot
+                  src="/screenshots/quotesmart-dashboard.jpg"
+                  alt="QuoteSmart dashboard showing pipeline value and profit margin"
+                />
+              }
             />
 
             <AlternatingRow
@@ -67,8 +74,14 @@ export default function HomePage() {
             <AlternatingRow
               eyebrow="Bolt"
               title="An operator's assistant, inside the software."
-              body="Bolt is the AI built into QuoteSmart — and the assistant in the corner of this page. It answers questions, speeds up quoting, and keeps everyone pointed at the next step. Ask it anything about what we build."
+              body="Bolt is the AI built into QuoteSmart — and the assistant in the corner of this page. It reads and edits quotes, customers, catalog, and financing, and keeps everyone pointed at the next step. Ask it anything about what we build."
               cta={{ href: "/quotesmart", label: "Meet Bolt in QuoteSmart" }}
+              visual={
+                <PhoneShot
+                  src="/screenshots/bolt-panel.jpg"
+                  alt="The Bolt AI chat panel inside QuoteSmart, offering to summarize quotes and start new ones"
+                />
+              }
             />
           </div>
         </div>

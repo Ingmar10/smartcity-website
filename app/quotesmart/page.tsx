@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import AlternatingRow from "@/components/AlternatingRow";
 import CTAButton from "@/components/CTAButton";
+import PhoneShot from "@/components/Screenshot";
 
 export const metadata: Metadata = {
   title: "QuoteSmart",
@@ -74,15 +75,10 @@ export default function QuoteSmartPage() {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
-              {/* Swap for the QuoteSmart dashboard (mobile) screenshot when supplied */}
-              <div className="relative mx-auto aspect-[9/16] w-full max-w-[300px] overflow-hidden rounded-[2rem] border-8 border-ink/90 bg-brand-gradient shadow-2xl">
-                <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_30%_0%,rgba(255,255,255,0.25),transparent_55%)]" />
-                <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                  <span className="text-base font-semibold text-white/85">
-                    QuoteSmart dashboard
-                  </span>
-                </div>
-              </div>
+              <PhoneShot
+                src="/screenshots/quotesmart-dashboard.jpg"
+                alt="QuoteSmart dashboard on mobile, showing pipeline value, profit margin, and the Ask Bolt assistant"
+              />
             </ScrollReveal>
           </div>
         </div>
@@ -126,21 +122,33 @@ export default function QuoteSmartPage() {
             title="Your brand on the outside. Your margin on the inside."
             body="Every proposal goes out under the right brand — the dealer's or the parent's — with a clean, customer-ready layout. The material list and cost build-up stay internal, always."
             bullets={[
-              "Per-dealer branding toggle",
+              "Logos, colors, and typography per brand",
               "Puppeteer-rendered PDF export",
               "Customer-facing quote at a public link",
             ]}
+            visual={
+              <PhoneShot
+                src="/screenshots/proposal-branding.jpg"
+                alt="QuoteSmart proposal branding settings — logos, default cover, brand colors, and typography"
+              />
+            }
           />
           <AlternatingRow
             flip
             eyebrow="Your team"
             title="Reps, roles, and attribution that actually hold."
-            body="Rep profiles with photos, quote attribution per person, and five enforced roles. Dealer writes are routed through a secured function so quotes can't be tampered with client-side."
+            body="Rep profiles, quote attribution per person, and enforced roles — Owner, Admin, Sales Rep, Dealer. Dealer writes are routed through a secured function so quotes can't be tampered with client-side."
             bullets={[
-              "Rep profiles and per-quote attribution",
-              "Five roles enforced by security rules",
+              "Invite members and assign roles",
+              "Owner / Admin / Sales Rep / Dealer access",
               "Measurement PDF import pipeline",
             ]}
+            visual={
+              <PhoneShot
+                src="/screenshots/team.jpg"
+                alt="QuoteSmart team management — add members, assign roles, and manage access"
+              />
+            }
           />
         </div>
       </section>

@@ -76,9 +76,16 @@ shows in **Settings → Domains**. Do this only after the site is tested.
 - **Bolt rate limit** (`lib/rateLimit.ts`): 20 messages / IP / hour, returns 429.
   It's in-memory (per serverless instance). For strict cross-instance limits at
   scale, move the counter to Vercel KV / Upstash Redis.
-- **Assets to swap in** (`public/`): SmartCity logo PNG, and QuoteSmart
-  dashboard / proposal-branding / team screenshots + the Bolt panel reference.
-  The site currently uses coded logos + branded placeholders.
-- **Favicons:** `app/icon.svg` (SmartCity) and `app/dialbolt/icon.svg` (DialBolt,
-  per-route). Regenerate raster set (`apple-icon.png`, `favicon.ico`) with
-  `node scripts/gen-favicons.mjs`.
+- **Brand assets** (`public/`): real SmartCity logo + product screenshots are in
+  place. `public/logo/smartcity-icon-{dark,white}.png` (S-monogram, used in the
+  nav/footer), `public/logo/smartcity-lockup-{dark,white}.png` (full lockups),
+  `public/logo/smartcity-mark.png` (purple house/bulb mark), and
+  `public/screenshots/*.jpg` (QuoteSmart dashboard, Bolt panel, proposal
+  branding, team).
+- **Favicons:** SmartCity site favicon is the purple house/bulb mark —
+  `app/icon.png`, `app/apple-icon.png` (white-backed for iOS), and
+  `app/favicon.ico`, all generated from `public/logo/smartcity-mark.png`.
+  DialBolt has its own per-route favicon at `app/dialbolt/icon.svg` (bolt tile).
+- **Note — brand marks:** nav/footer currently use the S-monogram; the favicon
+  uses the house/bulb. To make them consistent, point `LogoMark` in
+  `components/Logo.tsx` at `smartcity-mark.png` (or vice-versa).
