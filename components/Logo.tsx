@@ -1,25 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
 
-// SmartCity Contractors mark — the real S-monogram (extracted from the brand
-// PNG). Dark variant for light backgrounds, white for dark/purple backgrounds.
-// (The purple lightning-bolt tile is the QuoteSmart/Bolt product icon, used in
-// the Bolt widget — not the corporate mark.)
+// SmartCity Contractors brand mark — the purple house/bulb icon. Single purple
+// mark works on both light and dark backgrounds, so nav, footer, and favicon all
+// share it for full brand consistency. The `variant` prop controls the wordmark
+// text color only.
 
 export function LogoMark({
   size = 32,
-  variant = "dark",
 }: {
   size?: number;
+  /** Accepted for call-site symmetry; the mark is a single purple asset. */
   variant?: "dark" | "white";
 }) {
-  const src =
-    variant === "white"
-      ? "/logo/smartcity-icon-white.png"
-      : "/logo/smartcity-icon-dark.png";
   return (
     <Image
-      src={src}
+      src="/logo/smartcity-mark.png"
       width={size}
       height={size}
       alt=""
@@ -42,7 +38,7 @@ export default function Logo({
       className="group inline-flex items-center gap-2.5"
       aria-label="SmartCity Contractors — home"
     >
-      <LogoMark size={30} variant={variant} />
+      <LogoMark size={34} variant={variant} />
       <span
         className={`text-[1.05rem] font-bold tracking-[-0.02em] ${textColor}`}
       >

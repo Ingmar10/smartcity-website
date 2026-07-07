@@ -35,7 +35,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <LogoMark size={30} />
+              <LogoMark size={32} />
               <span className="text-[1.05rem] font-bold tracking-[-0.02em]">
                 SmartCity Contractors
               </span>
