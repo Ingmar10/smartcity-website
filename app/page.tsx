@@ -3,6 +3,7 @@ import AlternatingRow from "@/components/AlternatingRow";
 import ScrollReveal from "@/components/ScrollReveal";
 import CTAButton from "@/components/CTAButton";
 import PhoneShot from "@/components/Screenshot";
+import EcosystemRow from "@/components/EcosystemRow";
 
 export default function HomePage() {
   return (
@@ -86,6 +87,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* The SmartCity Ecosystem */}
+      <EcosystemRow />
 
       {/* Closing CTA */}
       <section className="section-pad pt-0">

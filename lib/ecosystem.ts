@@ -1,0 +1,64 @@
+// Single source of truth for the SmartCity product ecosystem. Used by the nav
+// dropdown, the homepage ecosystem row, and the footer so everything stays in
+// sync. Order here is the display order.
+
+export type EcosystemStatus = "live" | "soon";
+
+export type EcosystemProduct = {
+  name: string;
+  href: string;
+  tagline: string; // one line for nav/footer
+  blurb: string; // slightly longer, for the homepage row
+  status: EcosystemStatus;
+};
+
+export const ECOSYSTEM: EcosystemProduct[] = [
+  {
+    name: "QuoteSmart",
+    href: "/quotesmart",
+    tagline: "The quoting platform",
+    blurb:
+      "Price, brand, and close — the central rail every SmartCity lead runs through.",
+    status: "live",
+  },
+  {
+    name: "DialBolt",
+    href: "/dialbolt",
+    tagline: "Dead-lead reactivation",
+    blurb:
+      "Done-for-you SMS reactivation that revives old leads and feeds them into QuoteSmart.",
+    status: "live",
+  },
+  {
+    name: "SmartCity Network",
+    href: "/network",
+    tagline: "The contractor network",
+    blurb:
+      "The backbone of the trades — contractors plug into the operating stack and keep their independence.",
+    status: "live",
+  },
+  {
+    name: "SmartCity Voice",
+    href: "/voice",
+    tagline: "AI voice agents",
+    blurb:
+      "Done-for-you inbound AI voice that answers, qualifies, and books — 24/7.",
+    status: "soon",
+  },
+  {
+    name: "SmartCity Payments",
+    href: "/payments",
+    tagline: "The money rail",
+    blurb:
+      "Instant, low-fee contractor payouts and commission settlement on XRPL rails, plus native Stripe card acceptance.",
+    status: "soon",
+  },
+  {
+    name: "SmartCity University",
+    href: "/university",
+    tagline: "Field-tested training",
+    blurb:
+      "Contractor training built by an operator who ran the jobs — not an influencer.",
+    status: "soon",
+  },
+];

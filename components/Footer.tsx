@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { LogoMark } from "./Logo";
 import { COMPANY, fullAddress } from "@/lib/brand";
+import { ECOSYSTEM } from "@/lib/ecosystem";
 
 const cols = [
   {
-    heading: "Products",
-    links: [
-      { href: "/quotesmart", label: "QuoteSmart" },
-      { href: "/dialbolt", label: "DialBolt" },
-    ],
+    heading: "Ecosystem",
+    links: ECOSYSTEM.map((p) => ({ href: p.href, label: p.name })),
   },
   {
     heading: "Company",

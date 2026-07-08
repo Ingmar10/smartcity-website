@@ -22,7 +22,20 @@ assistant). Built as a coded stack, deployed to Vercel at
 | `/dialbolt/consent` | Rep-attributed TCPA SMS consent form (`?rep=` param) |
 | `/dialbolt/privacy` | Privacy Policy (A2P 10DLC) |
 | `/dialbolt/terms` | Terms of Service (A2P 10DLC) |
+| `/network` | SmartCity Contractors Network (live) — hierarchy, members, apply |
+| `/voice` | SmartCity Voice (coming soon) — AI voice agents, waitlist |
+| `/payments` | SmartCity Payments (coming soon) — XRPL + Stripe money rail, waitlist |
+| `/university` | SmartCity University (coming soon) — training tracks, waitlist |
 | `/contact` | Contact form + business info |
+
+The ecosystem is defined in one place — `lib/ecosystem.ts` — which drives the nav
+"Ecosystem" dropdown, the homepage ecosystem row, and the footer. Coming-soon
+pages use rep-attributed waitlist forms (`components/WaitlistForm.tsx`, hidden
+`rep` from `?rep=` + a per-page `source` tag) that POST to `/api/waitlist` and
+store durably via `lib/waitlistStore.ts` (Vercel Postgres → `waitlist_signups`,
+local `.data/waitlist.jsonl` fallback in dev), same pattern as DialBolt consent.
+Valid `source` values: `voice-waitlist`, `payments-waitlist`,
+`university-waitlist`, `network-apply`.
 
 Site-wide: a floating **Ask Bolt** pill (bottom-right) opens a Claude-powered
 chat widget scoped to the SmartCity ecosystem. It **never auto-opens** (cost
