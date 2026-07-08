@@ -68,7 +68,10 @@ Set these in **Vercel → Project → Settings → Environment Variables** (neve
    the project — this sets `POSTGRES_URL` automatically. The schema self-heals:
    `lib/db.ts` (`ensureTables`) runs `CREATE TABLE IF NOT EXISTS` for both the
    `consent_submissions` and `waitlist_signups` tables on the first API call
-   after a cold start — no manual migration or SQL run needed.
+   after a cold start — no manual migration or SQL run needed. Verify the schema
+   anytime at **`GET /api/health/db`** (public, no-index): it self-heals then
+   reports connection status, per-table existence, and row counts — no need to
+   submit a real record.
 5. Deploy, test on the `*.vercel.app` URL, then point DNS.
 
 ## DNS
