@@ -1,23 +1,37 @@
-// Idempotent schema init for the Postgres-backed stores.
-//
-// Runs CREATE TABLE IF NOT EXISTS for every table the app writes to, so a
-// freshly-provisioned database self-heals on the first API call — no manual
-// migration, prisma migrate, or separate SQL run required. Both tables are
-// created together, so any endpoint (consent OR waitlist) provisions the full
-// schema.
-//
-// The `ensured` flag caches success for the life of a warm serverless instance
-// (so we don't re-run DDL on every request); it resets on cold start, which is
-// exactly when re-checking the schema is worthwhile.
+import { createClient } from "@vercel/postgres";
 
+// Vercel provisioned Prisma Postgres, whose POSTGRES_URL is a DIRECT (non-pooled)
+// connection string. The pooled `sql` helper from @vercel/postgres rejects that
+// with `invalid_connection_string`, so we use createClient() (a single direct
+// connection) instead — it accepts the direct string. Each operation opens a
+// client, runs, and cleans up.
+
+type DbClient = ReturnType<typeof createClient>;
+
+// Run a unit of work against a fresh direct client, guaranteeing cleanup.
+export async function withDb<T>(
+  fn: (client: DbClient) => Promise<T>
+): Promise<T> {
+  const client = createClient(); // defaults to POSTGRES_URL (direct connection)
+  await client.connect();
+  try {
+    return await fn(client);
+  } finally {
+    await client.end();
+  }
+}
+
+// Idempotent schema init. Creates both tables the app writes to, so a freshly
+// provisioned database self-heals on the first API call. The `ensured` flag
+// caches success for a warm serverless instance and resets on cold start.
+// Takes the active client so it shares the caller's connection (one connection
+// per operation, not two).
 let ensured = false;
 
-export async function ensureTables(): Promise<void> {
+export async function ensureTables(client: DbClient): Promise<void> {
   if (ensured) return;
 
-  const { sql } = await import("@vercel/postgres");
-
-  await sql`
+  await client.sql`
     CREATE TABLE IF NOT EXISTS consent_submissions (
       id UUID PRIMARY KEY,
       created_at TIMESTAMPTZ NOT NULL,
@@ -30,7 +44,7 @@ export async function ensureTables(): Promise<void> {
     );
   `;
 
-  await sql`
+  await client.sql`
     CREATE TABLE IF NOT EXISTS waitlist_signups (
       id UUID PRIMARY KEY,
       created_at TIMESTAMPTZ NOT NULL,

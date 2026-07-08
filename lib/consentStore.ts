@@ -14,7 +14,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import { ensureTables } from "./db";
+import { ensureTables, withDb } from "./db";
 
 export type ConsentRecord = {
   id: string;
@@ -35,20 +35,19 @@ function usePostgres(): boolean {
 }
 
 async function saveToPostgres(record: ConsentRecord): Promise<void> {
-  // Imported lazily so the dependency isn't touched when POSTGRES_URL is unset.
-  const { sql } = await import("@vercel/postgres");
+  await withDb(async (client) => {
+    // Idempotently ensure the schema exists (self-heals on cold start).
+    await ensureTables(client);
 
-  // Idempotently ensure the schema exists (self-heals on cold start).
-  await ensureTables();
-
-  await sql`
-    INSERT INTO consent_submissions
-      (id, created_at, name, phone, rep, ip, user_agent, tcpa_consent)
-    VALUES (
-      ${record.id}, ${record.created_at}, ${record.name}, ${record.phone},
-      ${record.rep}, ${record.ip}, ${record.user_agent}, ${record.tcpa_consent}
-    );
-  `;
+    await client.sql`
+      INSERT INTO consent_submissions
+        (id, created_at, name, phone, rep, ip, user_agent, tcpa_consent)
+      VALUES (
+        ${record.id}, ${record.created_at}, ${record.name}, ${record.phone},
+        ${record.rep}, ${record.ip}, ${record.user_agent}, ${record.tcpa_consent}
+      );
+    `;
+  });
 }
 
 async function saveToLocalFile(record: ConsentRecord): Promise<void> {

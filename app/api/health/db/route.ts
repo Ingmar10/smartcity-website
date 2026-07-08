@@ -1,4 +1,4 @@
-import { ensureTables } from "@/lib/db";
+import { ensureTables, withDb } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,25 +43,26 @@ export async function GET() {
   }
 
   try {
-    const { sql } = await import("@vercel/postgres");
-
-    // Self-heal: create the tables if they don't exist yet (idempotent).
-    await ensureTables();
-
-    const tableStatus = async (name: string) => {
-      const reg = await sql`SELECT to_regclass(${`public.${name}`}) AS t`;
-      const exists = reg.rows[0]?.t != null;
-      let rows: number | null = null;
-      if (exists) {
-        // name is from the fixed EXPECTED allowlist — safe to interpolate
-        const res = await sql.query(`SELECT count(*)::int AS n FROM ${name}`);
-        rows = (res.rows[0]?.n as number) ?? 0;
-      }
-      return { exists, rows };
-    };
-
     const tables: Record<string, { exists: boolean; rows: number | null }> = {};
-    for (const t of EXPECTED) tables[t] = await tableStatus(t);
+
+    await withDb(async (client) => {
+      // Self-heal: create the tables if they don't exist yet (idempotent).
+      await ensureTables(client);
+
+      for (const name of EXPECTED) {
+        const reg = await client.sql`SELECT to_regclass(${`public.${name}`}) AS t`;
+        const exists = reg.rows[0]?.t != null;
+        let rows: number | null = null;
+        if (exists) {
+          // name is from the fixed EXPECTED allowlist — safe to interpolate
+          const res = await client.query(
+            `SELECT count(*)::int AS n FROM ${name}`
+          );
+          rows = (res.rows[0]?.n as number) ?? 0;
+        }
+        tables[name] = { exists, rows };
+      }
+    });
 
     const ok = EXPECTED.every((t) => tables[t].exists);
     return json(
