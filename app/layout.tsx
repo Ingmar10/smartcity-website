@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
@@ -45,6 +45,13 @@ export const metadata: Metadata = {
       "QuoteSmart for quoting. DialBolt for reviving dead leads. Every lead runs through QuoteSmart.",
   },
   robots: { index: true, follow: true },
+};
+
+// Explicit mobile viewport so phones render at device width (not desktop width).
+// initialScale 1; zoom left enabled for accessibility.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

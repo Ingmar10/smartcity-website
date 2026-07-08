@@ -159,8 +159,9 @@ export default function BoltWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? undefined : { opacity: 0, y: 24, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.21, 0.47, 0.32, 0.98] }}
-            className="fixed bottom-5 right-5 z-50 flex h-[70vh] max-h-[560px] w-[calc(100vw-2.5rem)] max-w-[380px] flex-col overflow-hidden rounded-3xl border border-black/10 bg-white shadow-[0_24px_70px_-18px_rgba(20,16,25,0.35)] print:hidden"
+            className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col overflow-hidden bg-white sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[70vh] sm:max-h-[560px] sm:w-[380px] sm:rounded-3xl sm:border sm:border-black/10 sm:shadow-[0_24px_70px_-18px_rgba(20,16,25,0.35)] print:hidden"
             role="dialog"
+            aria-modal="true"
             aria-label="Bolt assistant"
           >
             {/* Header — white, gradient tile on the left (matches in-app Bolt) */}
@@ -177,9 +178,9 @@ export default function BoltWidget() {
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close Bolt"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-subtle transition-colors hover:bg-canvas"
+                className="-mr-1 flex h-11 w-11 items-center justify-center rounded-full text-subtle transition-colors hover:bg-canvas"
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
                 </svg>
               </button>
@@ -242,8 +243,8 @@ export default function BoltWidget() {
               )}
             </div>
 
-            {/* Composer */}
-            <div className="border-t border-black/10 bg-white p-3">
+            {/* Composer — 16px input on mobile prevents iOS zoom-on-focus */}
+            <div className="border-t border-black/10 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-3">
               <div className="flex items-end gap-2 rounded-2xl border border-black/10 bg-white px-3 py-2 focus-within:border-brand">
                 <textarea
                   ref={inputRef}
@@ -252,13 +253,13 @@ export default function BoltWidget() {
                   onKeyDown={onKeyDown}
                   rows={1}
                   placeholder="Ask Bolt…"
-                  className="max-h-28 flex-1 resize-none bg-transparent text-[0.9rem] leading-relaxed text-ink outline-none placeholder:text-subtle/70"
+                  className="max-h-28 flex-1 resize-none bg-transparent text-base leading-relaxed text-ink outline-none placeholder:text-subtle/70 sm:text-[0.9rem]"
                 />
                 <button
                   onClick={() => sendText(input)}
                   disabled={loading || !input.trim()}
                   aria-label="Send"
-                  className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-brand text-white transition-all hover:bg-brand-dark disabled:bg-brand-light disabled:opacity-70"
+                  className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand text-white transition-all hover:bg-brand-dark disabled:bg-brand-light disabled:opacity-70"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2">
                     <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
