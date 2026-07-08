@@ -32,7 +32,8 @@ The ecosystem is defined in one place — `lib/ecosystem.ts` — which drives th
 "Ecosystem" dropdown, the homepage ecosystem row, and the footer. Coming-soon
 pages use rep-attributed waitlist forms (`components/WaitlistForm.tsx`, hidden
 `rep` from `?rep=` + a per-page `source` tag) that POST to `/api/waitlist` and
-store durably via `lib/waitlistStore.ts` (Vercel Postgres → `waitlist_signups`,
+store durably via `lib/waitlistStore.ts` (Vercel Postgres → `waitlist_signups`
+via the shared `ensureTables` init in `lib/db.ts`,
 local `.data/waitlist.jsonl` fallback in dev), same pattern as DialBolt consent.
 Valid `source` values: `voice-waitlist`, `payments-waitlist`,
 `university-waitlist`, `network-apply`.
@@ -64,8 +65,10 @@ Set these in **Vercel → Project → Settings → Environment Variables** (neve
 2. Import the repo in Vercel (framework auto-detected as Next.js).
 3. Add `ANTHROPIC_API_KEY` as an env var.
 4. **Provision Vercel Postgres** (Storage tab → Create → Postgres) and link it to
-   the project — this sets `POSTGRES_URL` automatically. The `consent_records`
-   table is created on the first submission.
+   the project — this sets `POSTGRES_URL` automatically. The schema self-heals:
+   `lib/db.ts` (`ensureTables`) runs `CREATE TABLE IF NOT EXISTS` for both the
+   `consent_submissions` and `waitlist_signups` tables on the first API call
+   after a cold start — no manual migration or SQL run needed.
 5. Deploy, test on the `*.vercel.app` URL, then point DNS.
 
 ## DNS

@@ -14,6 +14,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
+import { ensureTables } from "./db";
 
 export type ConsentRecord = {
   id: string;
@@ -37,21 +38,11 @@ async function saveToPostgres(record: ConsentRecord): Promise<void> {
   // Imported lazily so the dependency isn't touched when POSTGRES_URL is unset.
   const { sql } = await import("@vercel/postgres");
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS consent_records (
-      id UUID PRIMARY KEY,
-      created_at TIMESTAMPTZ NOT NULL,
-      name TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      rep TEXT,
-      ip TEXT,
-      user_agent TEXT,
-      tcpa_consent BOOLEAN NOT NULL
-    );
-  `;
+  // Idempotently ensure the schema exists (self-heals on cold start).
+  await ensureTables();
 
   await sql`
-    INSERT INTO consent_records
+    INSERT INTO consent_submissions
       (id, created_at, name, phone, rep, ip, user_agent, tcpa_consent)
     VALUES (
       ${record.id}, ${record.created_at}, ${record.name}, ${record.phone},

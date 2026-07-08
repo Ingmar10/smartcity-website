@@ -5,6 +5,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
+import { ensureTables } from "./db";
 
 export type WaitlistRecord = {
   id: string;
@@ -26,18 +27,10 @@ function usePostgres(): boolean {
 
 async function saveToPostgres(record: WaitlistRecord): Promise<void> {
   const { sql } = await import("@vercel/postgres");
-  await sql`
-    CREATE TABLE IF NOT EXISTS waitlist_signups (
-      id UUID PRIMARY KEY,
-      created_at TIMESTAMPTZ NOT NULL,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      source TEXT NOT NULL,
-      rep TEXT,
-      ip TEXT,
-      user_agent TEXT
-    );
-  `;
+
+  // Idempotently ensure the schema exists (self-heals on cold start).
+  await ensureTables();
+
   await sql`
     INSERT INTO waitlist_signups
       (id, created_at, name, email, source, rep, ip, user_agent)
