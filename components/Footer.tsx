@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoMark } from "./Logo";
+import SocialLinks from "./SocialLinks";
 import { COMPANY, fullAddress } from "@/lib/brand";
 import { ECOSYSTEM } from "@/lib/ecosystem";
 
@@ -52,6 +53,8 @@ export default function Footer() {
                 {COMPANY.policyEmail}
               </a>
             </p>
+            {/* Renders only for socials with a URL set in lib/brand.ts */}
+            <SocialLinks className="mt-6" />
           </div>
 
           {cols.map((c) => (

@@ -49,3 +49,25 @@ export const PRODUCTS = {
   dialbolt: "DialBolt",
   bolt: "Bolt",
 } as const;
+
+// ── Social profiles ────────────────────────────────────────────────────────
+// Add a profile URL to make its icon appear in the footer; leave it "" to hide
+// it. Facebook, Instagram, and TikTok are live. LinkedIn, YouTube, and X are
+// pre-wired (icon + render logic ready) — just drop in a URL to light them up,
+// no code change. Update URLs here; nothing else to touch.
+export type SocialKey =
+  | "facebook"
+  | "instagram"
+  | "tiktok"
+  | "linkedin"
+  | "youtube"
+  | "x";
+
+export const SOCIALS: Record<SocialKey, string> = {
+  facebook: "",
+  instagram: "",
+  tiktok: "",
+  linkedin: "",
+  youtube: "",
+  x: "",
+};
