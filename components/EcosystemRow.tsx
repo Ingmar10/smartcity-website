@@ -31,9 +31,18 @@ export default function EcosystemRow() {
                   <h3 className="text-lg font-bold">{p.name}</h3>
                   <StatusTag status={p.status} />
                 </div>
-                <p className="mt-3 flex-1 text-[0.95rem] leading-relaxed text-subtle">
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-subtle">
                   {p.blurb}
                 </p>
+                {p.feature && (
+                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-canvas px-3 py-2.5">
+                    <span className="text-[0.85rem] font-semibold text-ink">
+                      {p.feature.name}
+                    </span>
+                    <StatusTag status={p.feature.status} className="ml-auto" />
+                  </div>
+                )}
+                <div className="flex-1" />
                 <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand">
                   {p.status === "live" ? "Explore" : "Learn more"}
                   <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>

@@ -3,6 +3,8 @@ import ScrollReveal from "@/components/ScrollReveal";
 import AlternatingRow from "@/components/AlternatingRow";
 import CTAButton from "@/components/CTAButton";
 import PhoneShot from "@/components/Screenshot";
+import WaitlistForm from "@/components/WaitlistForm";
+import StatusTag from "@/components/StatusTag";
 
 export const metadata: Metadata = {
   title: "QuoteSmart",
@@ -153,6 +155,80 @@ export default function QuoteSmartPage() {
         </div>
       </section>
 
+      {/* AI-Powered Inventory — coming soon, Bolt-powered, inside QuoteSmart */}
+      <section id="inventory" className="section-pad pt-8">
+        <div className="container-content">
+          <ScrollReveal>
+            <div className="overflow-hidden rounded-[2rem] border border-black/5 bg-canvas p-8 md:p-14">
+              <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                {/* Copy */}
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="eyebrow">Bolt-powered · inside QuoteSmart</p>
+                    <StatusTag status="soon" />
+                  </div>
+                  <h2 className="mt-4 display-2">
+                    Inventory that thinks like you do.
+                  </h2>
+                  <p className="mt-6 lede">
+                    Bolt-powered inventory management inside QuoteSmart. Track
+                    stock levels, get reorder alerts based on your pipeline, and
+                    ask Bolt about anything — like you&apos;re talking to your
+                    best purchasing manager.
+                  </p>
+                  <ul className="mt-8 space-y-3">
+                    {[
+                      "Track stock levels across your catalog",
+                      "Reorder alerts driven by your live pipeline",
+                      "Ask Bolt about pricing, availability, and what to order next",
+                    ].map((t) => (
+                      <li key={t} className="flex items-start gap-3">
+                        <span className="mt-1 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-brand/10">
+                          <span className="h-2 w-2 rounded-full bg-brand" />
+                        </span>
+                        <span className="text-base leading-relaxed text-ink/80">
+                          {t}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Example "ask Bolt" bubbles */}
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-subtle">
+                    Just ask, like you would a person:
+                  </p>
+                  {[
+                    "What's the best price on a Powerwall 3 right now?",
+                    "I'm running low on IQ8+ microinverters — reorder?",
+                  ].map((q) => (
+                    <div key={q} className="flex items-start gap-3">
+                      <InventoryBoltTile />
+                      <div className="rounded-2xl rounded-tl-md border border-black/5 bg-white px-4 py-3 text-[0.95rem] leading-relaxed text-ink shadow-[0_1px_2px_rgba(20,16,25,0.04)]">
+                        {q}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Waitlist */}
+              <div className="mx-auto mt-12 max-w-xl border-t border-black/5 pt-10">
+                <p className="mb-4 text-center text-sm font-semibold text-ink">
+                  Want it first? Join the AI-Powered Inventory waitlist.
+                </p>
+                <WaitlistForm
+                  source="inventory-waitlist"
+                  cta="Join the Inventory waitlist"
+                  note="No spam. We'll email you when AI-Powered Inventory opens."
+                />
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* Download CTA */}
       <section id="download" className="section-pad pt-8">
         <div className="container-content">
@@ -189,5 +265,16 @@ export default function QuoteSmartPage() {
         </div>
       </section>
     </>
+  );
+}
+
+// Small gradient bolt tile echoing the Bolt widget, for the "ask Bolt" bubbles.
+function InventoryBoltTile() {
+  return (
+    <span className="flex h-8 w-8 flex-none items-center justify-center rounded-[0.6rem] bg-brand-gradient text-white">
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+        <path d="M13.5 2 5 13h5.2L9 22l8.5-11H12l1.5-9Z" />
+      </svg>
+    </span>
   );
 }

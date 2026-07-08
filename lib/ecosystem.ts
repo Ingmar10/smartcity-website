@@ -10,6 +10,9 @@ export type EcosystemProduct = {
   tagline: string; // one line for nav/footer
   blurb: string; // slightly longer, for the homepage row
   status: EcosystemStatus;
+  // Optional coming-soon feature that lives *inside* this product (not a
+  // separate product). Rendered as a small sub-item on the homepage card.
+  feature?: { name: string; status: EcosystemStatus };
 };
 
 export const ECOSYSTEM: EcosystemProduct[] = [
@@ -20,6 +23,7 @@ export const ECOSYSTEM: EcosystemProduct[] = [
     blurb:
       "Price, brand, and close — the central rail every SmartCity lead runs through.",
     status: "live",
+    feature: { name: "AI-Powered Inventory", status: "soon" },
   },
   {
     name: "DialBolt",

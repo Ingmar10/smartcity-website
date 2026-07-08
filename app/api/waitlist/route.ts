@@ -10,6 +10,7 @@ const SOURCES = new Set([
   "payments-waitlist",
   "university-waitlist",
   "network-apply",
+  "inventory-waitlist",
 ]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
