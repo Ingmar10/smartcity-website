@@ -64,9 +64,9 @@ export type SocialKey =
   | "x";
 
 export const SOCIALS: Record<SocialKey, string> = {
-  facebook: "",
-  instagram: "",
-  tiktok: "",
+  facebook: "https://www.facebook.com/SmartCityContractors",
+  instagram: "https://www.instagram.com/smartcity_contractors/",
+  tiktok: "https://www.tiktok.com/@smartcitycontractors?lang=en",
   linkedin: "",
   youtube: "",
   x: "",
