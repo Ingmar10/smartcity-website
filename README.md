@@ -10,7 +10,7 @@ assistant). Built as a coded stack, deployed to Vercel at
 - **Tailwind CSS** — brand tokens in `tailwind.config.ts`
 - **Framer Motion** — scroll reveals + widget transitions
 - **Anthropic SDK** (`@anthropic-ai/sdk`) — powers the Bolt chat widget (Claude Haiku 4.5)
-- **@vercel/postgres** — stores DialBolt TCPA consent records
+- **pg (node-postgres)** — stores DialBolt TCPA consent records + waitlist signups
 
 ## Pages
 | Route | Purpose |

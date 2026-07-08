@@ -1,4 +1,4 @@
-import { ensureTables, withDb } from "@/lib/db";
+import { ensureTables, query } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,26 +43,26 @@ export async function GET() {
   }
 
   try {
+    // Self-heal: create the tables if they don't exist yet (idempotent).
+    await ensureTables();
+
     const tables: Record<string, { exists: boolean; rows: number | null }> = {};
-
-    await withDb(async (client) => {
-      // Self-heal: create the tables if they don't exist yet (idempotent).
-      await ensureTables(client);
-
-      for (const name of EXPECTED) {
-        const reg = await client.sql`SELECT to_regclass(${`public.${name}`}) AS t`;
-        const exists = reg.rows[0]?.t != null;
-        let rows: number | null = null;
-        if (exists) {
-          // name is from the fixed EXPECTED allowlist — safe to interpolate
-          const res = await client.query(
-            `SELECT count(*)::int AS n FROM ${name}`
-          );
-          rows = (res.rows[0]?.n as number) ?? 0;
-        }
-        tables[name] = { exists, rows };
+    for (const name of EXPECTED) {
+      const reg = await query<{ t: string | null }>(
+        `SELECT to_regclass($1) AS t`,
+        [`public.${name}`]
+      );
+      const exists = reg.rows[0]?.t != null;
+      let rows: number | null = null;
+      if (exists) {
+        // name is from the fixed EXPECTED allowlist — safe to interpolate
+        const res = await query<{ n: number }>(
+          `SELECT count(*)::int AS n FROM ${name}`
+        );
+        rows = res.rows[0]?.n ?? 0;
       }
-    });
+      tables[name] = { exists, rows };
+    }
 
     const ok = EXPECTED.every((t) => tables[t].exists);
     return json(

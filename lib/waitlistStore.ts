@@ -5,7 +5,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import { ensureTables, withDb } from "./db";
+import { ensureTables, query } from "./db";
 
 export type WaitlistRecord = {
   id: string;
@@ -26,19 +26,24 @@ function usePostgres(): boolean {
 }
 
 async function saveToPostgres(record: WaitlistRecord): Promise<void> {
-  await withDb(async (client) => {
-    // Idempotently ensure the schema exists (self-heals on cold start).
-    await ensureTables(client);
+  // Idempotently ensure the schema exists (self-heals on cold start).
+  await ensureTables();
 
-    await client.sql`
-      INSERT INTO waitlist_signups
-        (id, created_at, name, email, source, rep, ip, user_agent)
-      VALUES (
-        ${record.id}, ${record.created_at}, ${record.name}, ${record.email},
-        ${record.source}, ${record.rep}, ${record.ip}, ${record.user_agent}
-      );
-    `;
-  });
+  await query(
+    `INSERT INTO waitlist_signups
+       (id, created_at, name, email, source, rep, ip, user_agent)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [
+      record.id,
+      record.created_at,
+      record.name,
+      record.email,
+      record.source,
+      record.rep,
+      record.ip,
+      record.user_agent,
+    ]
+  );
 }
 
 async function saveToLocalFile(record: WaitlistRecord): Promise<void> {
