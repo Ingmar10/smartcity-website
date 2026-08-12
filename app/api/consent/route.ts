@@ -1,5 +1,9 @@
 import { saveConsent } from "@/lib/consentStore";
-import { clientIpFrom } from "@/lib/rateLimit";
+import {
+  checkRateLimit,
+  clientIpFrom,
+  pruneRateLimitStore,
+} from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +46,47 @@ export async function POST(req: Request) {
   const ip = clientIpFrom(req.headers);
   const userAgent = req.headers.get("user-agent");
 
+  // ---- Rate limit -----------------------------------------------------------
+  // `checkRateLimit` already existed in lib/rateLimit.ts and this route imported
+  // only `clientIpFrom` from it — the limiter was written and never called on a
+  // public, unauthenticated write. A guard with no reader.
+  //
+  // TWO dimensions, because they stop different things:
+  //   per-IP    — one script generating consent records in bulk.
+  //   per-PHONE — the more damaging shape. A forged GRANT against a real
+  //               person's number is far worse than a forged block: it produces
+  //               a record that looks impeccable and authorises texting someone
+  //               who never agreed. Limiting per number bounds how fast that
+  //               can be manufactured against one victim.
+  //
+  // Both are checked AFTER validation, so a malformed request cannot consume a
+  // legitimate person's quota, and BEFORE the write, so a blocked request
+  // stores nothing.
+  //
+  // LIMITATION, stated rather than implied: this counter is in-instance memory
+  // (see lib/rateLimit.ts), so it blunts a single client hammering one warm
+  // instance and does not enforce globally. It is a speed bump, not an
+  // authorisation boundary. The real control is phone VERIFICATION, which lands
+  // when this flow moves to the QuoteSmart Wave 13 endpoint and its Twilio
+  // Verify OTP — until then, nothing here proves the submitter controls the
+  // number they typed.
+  pruneRateLimitStore();
+  const ipLimit = checkRateLimit(`consent:ip:${ip}`, 10);
+  const phoneLimit = checkRateLimit(`consent:phone:${phone}`, 3);
+  if (!ipLimit.ok || !phoneLimit.ok) {
+    const retryAfter = Math.max(ipLimit.retryAfterSeconds, phoneLimit.retryAfterSeconds);
+    console.warn(
+      `[consent] rate limited ip=${ip} ipOk=${ipLimit.ok} phoneOk=${phoneLimit.ok} retryAfter=${retryAfter}s`
+    );
+    // Deliberately does not say WHICH dimension tripped — naming it tells an
+    // abuser which one to vary.
+    return json(
+      { error: "Too many submissions. Please wait a few minutes and try again." },
+      429,
+      { "Retry-After": String(retryAfter) }
+    );
+  }
+
   try {
     const record = await saveConsent({
       name,
@@ -65,9 +110,13 @@ export async function POST(req: Request) {
   }
 }
 
-function json(payload: unknown, status = 200) {
+function json(payload: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      ...extraHeaders,
+    },
   });
 }

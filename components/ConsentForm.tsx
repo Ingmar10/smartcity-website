@@ -103,8 +103,24 @@ export default function ConsentForm() {
         </div>
 
         <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-canvas p-4">
+          {/* UNCHECKED BY DEFAULT and never pre-ticked — `tcpa` starts false
+              and this is a controlled input. Pre-checked consent is the classic
+              TCPA violation and it must stay impossible here.
+
+              `required` is deliberate and is NOT what enforces this: the submit
+              handler below and the server route both refuse without it. The
+              attribute exists so assistive technology announces the field as
+              required, and so the browser's own message appears before a
+              round trip. Three layers, none of them load-bearing alone.
+
+              On THIS page refusing without the box is correct — the box is the
+              entire transaction, nothing else is being obtained. The autoquoter
+              at quotesmart.app is different: there the customer is getting a
+              quote, so consent must be optional and the form must submit either
+              way, with the SMS path branching only on a ticked box. */}
           <input
             type="checkbox"
+            required
             checked={tcpa}
             onChange={(e) => setTcpa(e.target.checked)}
             className="mt-1 h-5 w-5 flex-none accent-brand"
