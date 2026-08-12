@@ -1,13 +1,24 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { COMPANY } from "@/lib/brand";
 
-export default function ConsentForm() {
-  const searchParams = useSearchParams();
-  // Hidden rep-attribution field, auto-populated from ?rep=<slug>.
-  const rep = searchParams.get("rep") ?? "";
+/**
+ * `rep` arrives as a PROP, read from searchParams by the server page.
+ *
+ * It used to come from `useSearchParams()` here, and that one hook decided how
+ * the whole page rendered: reading search params on the client forces this
+ * subtree to be client-only, so the prerendered HTML carried the Suspense
+ * fallback — literally the word "Loading…" — and the consent checkbox and its
+ * disclosure were absent from the served markup entirely.
+ *
+ * That matters beyond performance. This page is the opt-in workflow named in
+ * SmartCity's A2P campaign registration, and a carrier reviewer whose tooling
+ * does not execute JavaScript would fetch it and find no consent language at
+ * all. The disclosure a compliance reviewer needs to see must be in the HTML,
+ * not assembled after hydration.
+ */
+export default function ConsentForm({ rep = "" }: { rep?: string }) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
