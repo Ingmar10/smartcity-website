@@ -6,12 +6,14 @@
 //   1. Postgres (via node-postgres / `pg`, see lib/db.ts) when POSTGRES_URL is
 //      set — the production path. ensureTables() auto-creates the
 //      `consent_submissions` table on first use.
-//   2. Local `.data/consent.jsonl` append fallback for local development, so
-//      nothing is lost while testing without a database.
+//   2. Local `.data/consent.jsonl` append fallback — LOCAL DEVELOPMENT ONLY.
 //
-// If BOTH are unavailable (e.g. a misconfigured production deploy with no DB
-// and a read-only filesystem), we THROW rather than silently drop the record —
-// the API route surfaces the failure to the user instead of faking success.
+// The fallback is NOT available in a deployed environment. It used to be, and
+// that was a silent-data-loss bug: a serverless filesystem is ephemeral and
+// per-instance, so a deploy with no POSTGRES_URL would accept submissions,
+// report success to the customer, and lose every consent record when the
+// container recycled. This comment claimed we threw in that case; the code did
+// not. It does now — see saveConsent.
 
 import { promises as fs } from "fs";
 import path from "path";
@@ -33,6 +35,28 @@ const LOCAL_FILE = path.join(LOCAL_DIR, "consent.jsonl");
 
 function usePostgres(): boolean {
   return Boolean(process.env.POSTGRES_URL);
+}
+
+/**
+ * Is this a deployed environment, where the local-file fallback is not durable?
+ *
+ * FAILS CLOSED. Anything that looks like a deploy counts as production unless it
+ * explicitly identifies itself otherwise, because the cost of being wrong here
+ * is a lost consent record and the cost of being wrong the other way is a local
+ * developer seeing an error.
+ */
+function isDeployedEnvironment(): boolean {
+  if (process.env.VERCEL_ENV) return process.env.VERCEL_ENV !== "development";
+  if (process.env.VERCEL) return true; // on Vercel with no VERCEL_ENV — assume deployed
+  return process.env.NODE_ENV === "production";
+}
+
+/** Thrown when a consent record cannot be stored durably. Never swallowed. */
+export class ConsentStorageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConsentStorageError";
+  }
 }
 
 async function saveToPostgres(record: ConsentRecord): Promise<void> {
@@ -79,7 +103,28 @@ export async function saveConsent(
     return record;
   }
 
-  // No database configured — fall back to the local append-only log.
+  // NO DATABASE CONFIGURED.
+  //
+  // The header above has always said we throw rather than silently drop a
+  // record. The code did not: it fell through to a local file, which on a
+  // serverless deploy is an EPHEMERAL, PER-INSTANCE filesystem — so the write
+  // "succeeded", the customer was told they were subscribed, and the consent
+  // record disappeared with the container. A TCPA consent record is the artifact
+  // you produce when someone asks why you texted them; one that evaporates is
+  // worse than none, because the submission that created it is real and the
+  // proof of permission is not.
+  //
+  // A hard failure is strictly better here. The customer sees "we couldn't
+  // record your consent, please try again", which is true, and nobody gets
+  // messaged on a permission we cannot evidence.
+  if (isDeployedEnvironment()) {
+    throw new ConsentStorageError(
+      "No consent store is configured (POSTGRES_URL is unset) in a deployed environment. " +
+        "Refusing the submission rather than writing to an ephemeral filesystem."
+    );
+  }
+
+  // Local development only — a real filesystem that persists between requests.
   await saveToLocalFile(record);
   return record;
 }
