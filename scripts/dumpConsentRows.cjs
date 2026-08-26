@@ -6,9 +6,11 @@
 // had no rate limiting applied, so any REAL row among them is
 // questionable-consent and must not be an outreach basis.
 //
-// MINIMAL BY CONSTRUCTION, not by discipline. The SELECT names two columns, so
-// it CANNOT return name, rep, ip or user_agent — the restraint is in the query
-// rather than in a promise to look away. Nothing is written to disk.
+// MINIMAL BY CONSTRUCTION, not by discipline. The SELECT names four columns —
+// phone, submitted_at, the consent flag, and `rep` (the only campaign
+// attribution this schema carries). It CANNOT return name, ip or user_agent:
+// the restraint is in the query rather than in a promise to look away. Nothing
+// is written to disk.
 //
 // Run it where POSTGRES_URL is set (so the connection string never travels
 // through a chat transcript):
@@ -38,20 +40,21 @@ const pool = new Pool({
 });
 
 (async () => {
-  // TWO COLUMNS. Adding one here is the only way to widen this, which is the point.
+  // FOUR COLUMNS, NAMED. Adding one here is the only way to widen this, which is
+  // the point — the query is the boundary, not a habit of not looking.
   const { rows } = await pool.query(
-    `SELECT phone, created_at, tcpa_consent
+    `SELECT phone, created_at, tcpa_consent, rep
        FROM consent_submissions
       ORDER BY created_at ASC`
   );
 
   console.log(`consent_submissions: ${rows.length} row(s)\n`);
-  console.log("  #  phone              created_at                     tcpa_consent");
-  console.log("  -  -----------------  -----------------------------  ------------");
+  console.log("  #  phone              submitted_at (ISO)             tcpa  rep (attribution)");
+  console.log("  -  -----------------  ----------------------------  ----  -----------------");
   rows.forEach((r, i) => {
     const ts = r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at);
     console.log(
-      `  ${String(i + 1).padStart(1)}  ${String(r.phone).padEnd(17)}  ${ts.padEnd(29)}  ${r.tcpa_consent}`
+      `  ${i + 1}  ${String(r.phone).padEnd(17)}  ${ts.padEnd(28)}  ${String(r.tcpa_consent).padEnd(4)}  ${r.rep ?? "(none)"}`
     );
   });
 
