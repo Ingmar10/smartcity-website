@@ -5,6 +5,9 @@
 // already been collected. Those existing rows would never trigger a
 // notification, so without this they stay unread forever. This sends them once.
 //
+// SAFE BY DEFAULT: with no flags this is a DRY RUN — it reads, prints, and
+// sends nothing. Actually delivering requires an explicit `--commit`.
+//
 // ONE-SHOT BY DESIGN. It deliberately re-implements the plain-text formatting
 // from lib/notify.ts rather than importing it: this is a .cjs script run
 // straight through node with no build step and no TS runtime dependency, and it
@@ -15,20 +18,19 @@
 // READ-ONLY against Postgres. The SELECT is the only statement; nothing is
 // written, updated or deleted here.
 //
-// Run it where both secrets are set:
+// POSTGRES_URL lives in Vercel's Production environment, NOT Development, so a
+// plain `vercel env pull` will not give you one. Pull production explicitly:
 //
-//   cd ~/Documents/smartcity-website
-//   vercel env pull .env.local
-//   set -a && . ./.env.local && set +a
-//   node scripts/backfillWaitlistNotify.cjs --dry-run   # print, send nothing
-//   node scripts/backfillWaitlistNotify.cjs             # actually send
+//   cd ~/Documents/smartcity-notify
+//   vercel env pull .env.production.local --environment=production --yes
+//   set -a && . ./.env.production.local && set +a
+//   node scripts/backfillWaitlistNotify.cjs             # dry run, sends nothing
+//   node scripts/backfillWaitlistNotify.cjs --commit    # actually sends
 
 const { Pool } = require("pg");
+const sgMail = require("@sendgrid/mail");
 
-const DRY_RUN = process.argv.includes("--dry-run");
-
-const DEFAULT_FROM = "SmartCity Leads <onboarding@resend.dev>";
-const DEFAULT_TO = "smartcitycontractors@gmail.com";
+const COMMIT = process.argv.includes("--commit");
 
 const SOURCE_LABELS = {
   "voice-waitlist": "Voice waitlist",
@@ -41,20 +43,30 @@ const SOURCE_LABELS = {
 const dbUrl = process.env.POSTGRES_URL;
 if (!dbUrl) {
   console.error(
-    "POSTGRES_URL is not set. Run this where the production connection string is\n" +
-      "available (e.g. after `vercel env pull .env.local`), or export it for this\n" +
-      "one command."
+    "POSTGRES_URL is not set. It lives in Vercel's PRODUCTION environment:\n" +
+      "  vercel env pull .env.production.local --environment=production --yes\n" +
+      "  set -a && . ./.env.production.local && set +a"
   );
   process.exit(2);
 }
 
-const resendKey = process.env.RESEND_API_KEY;
-if (!resendKey && !DRY_RUN) {
-  console.error(
-    "RESEND_API_KEY is not set. Set it, or re-run with --dry-run to print the\n" +
-      "email body without sending."
-  );
-  process.exit(2);
+const apiKey = process.env.SENDGRID_API_KEY;
+const from = process.env.WAITLIST_FROM_EMAIL;
+const to = process.env.WAITLIST_NOTIFY_TO;
+
+if (COMMIT) {
+  const missing = [
+    !apiKey && "SENDGRID_API_KEY",
+    !from && "WAITLIST_FROM_EMAIL",
+    !to && "WAITLIST_NOTIFY_TO",
+  ].filter(Boolean);
+  if (missing.length) {
+    console.error(
+      `Cannot --commit: ${missing.join(", ")} not set.\n` +
+        "Re-run without --commit to dry run."
+    );
+    process.exit(2);
+  }
 }
 
 function sourceLabel(source) {
@@ -64,10 +76,16 @@ function sourceLabel(source) {
 function formatTimestamp(value) {
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
+  // Individual component options, NOT dateStyle/timeStyle: ECMA-402 forbids
+  // combining those shorthands with `timeZoneName` and throws a TypeError.
   const local = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
-    dateStyle: "medium",
-    timeStyle: "medium",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     timeZoneName: "short",
   }).format(d);
   return `${local}  (${d.toISOString()})`;
@@ -110,28 +128,13 @@ function buildBody(leads) {
 }
 
 async function sendEmail(subject, text) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: process.env.WAITLIST_FROM_EMAIL || DEFAULT_FROM,
-      to: [process.env.WAITLIST_NOTIFY_TO || DEFAULT_TO],
-      subject,
-      text,
-    }),
-  });
-  const payload = await res.json().catch(() => null);
-  if (!res.ok) {
-    const detail = (payload && (payload.message || payload.name)) || `HTTP ${res.status}`;
-    throw new Error(`Resend rejected the send: ${detail}`);
-  }
-  if (!payload || !payload.id) {
-    throw new Error("Resend accepted the send but returned no id");
-  }
-  return payload.id;
+  sgMail.setApiKey(apiKey);
+  const [response] = await sgMail.send({ to, from, subject, text });
+  const headers = (response && response.headers) || {};
+  return {
+    id: headers["x-message-id"] || "(no x-message-id header)",
+    statusCode: (response && response.statusCode) || 0,
+  };
 }
 
 const pool = new Pool({
@@ -156,20 +159,24 @@ const pool = new Pool({
     const subject = `[SmartCity] ${rows.length} pending waitlist leads — backlog export`;
     const body = buildBody(rows);
 
-    if (DRY_RUN) {
-      console.log("\n--- DRY RUN, nothing sent ---");
+    if (!COMMIT) {
+      console.log("\n=== DRY RUN — nothing sent. Re-run with --commit to send. ===\n");
       console.log(`Subject: ${subject}`);
-      console.log(`To:      ${process.env.WAITLIST_NOTIFY_TO || DEFAULT_TO}`);
-      console.log(`From:    ${process.env.WAITLIST_FROM_EMAIL || DEFAULT_FROM}`);
+      console.log(`To:      ${to || "(WAITLIST_NOTIFY_TO not set)"}`);
+      console.log(`From:    ${from || "(WAITLIST_FROM_EMAIL not set)"}`);
       console.log("");
       console.log(body);
       return;
     }
 
-    const id = await sendEmail(subject, body);
-    console.log(`\nSENT. Resend message id: ${id}`);
+    const { id, statusCode } = await sendEmail(subject, body);
+    console.log(`\nSENT. HTTP ${statusCode}. SendGrid message id: ${id}`);
   } catch (err) {
-    console.error("Backfill failed:", err.message);
+    let detail = err.message;
+    if (err.response && err.response.body) {
+      detail += ` — ${JSON.stringify(err.response.body)}`;
+    }
+    console.error("Backfill failed:", detail);
     process.exitCode = 1;
   } finally {
     await pool.end();

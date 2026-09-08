@@ -1,8 +1,4 @@
-// Lead notification over Resend.
-//
-// Sends plain-text mail through the Resend REST API with `fetch` rather than
-// the `resend` SDK: one HTTP POST, no new dependency, no lockfile churn, and
-// the message id comes straight back in the JSON response.
+// Lead notification over SendGrid.
 //
 // CONTRACT, and the reason this file never throws: the caller has ALREADY
 // durably stored the lead by the time it gets here. A notification failure must
@@ -10,6 +6,13 @@
 // is a lost customer. Every export below resolves to a SendOutcome and swallows
 // its own errors, so `await notifyNewWaitlistLead(...)` cannot roll back or
 // fail the surrounding request.
+//
+// Sender and recipient both come from the environment. There is no hardcoded
+// fallback on purpose: SendGrid will only accept a FROM that has been verified
+// (Single Sender or domain auth), so a baked-in default would be a guess that
+// fails at send time with a confusing 403 rather than a clear config error.
+
+import sgMail from "@sendgrid/mail";
 
 export type WaitlistLead = {
   id: string;
@@ -23,17 +26,8 @@ export type WaitlistLead = {
 };
 
 export type SendOutcome =
-  | { ok: true; id: string }
+  | { ok: true; id: string; statusCode: number }
   | { ok: false; reason: string };
-
-const RESEND_ENDPOINT = "https://api.resend.com/emails";
-const SEND_TIMEOUT_MS = 8_000;
-
-// Resend's shared sender works without domain verification — the documented
-// fallback until notifications@smartcity.contractors is verified. Override with
-// WAITLIST_FROM_EMAIL to swap it without a deploy.
-const DEFAULT_FROM = "SmartCity Leads <onboarding@resend.dev>";
-const DEFAULT_TO = "smartcitycontractors@gmail.com";
 
 const SOURCE_LABELS: Record<string, string> = {
   "voice-waitlist": "Voice waitlist",
@@ -47,38 +41,35 @@ export function sourceLabel(source: string): string {
   return SOURCE_LABELS[source] ?? source;
 }
 
-function fromAddress(): string {
-  return process.env.WAITLIST_FROM_EMAIL || DEFAULT_FROM;
-}
-
-function toAddress(): string {
-  return process.env.WAITLIST_NOTIFY_TO || DEFAULT_TO;
-}
-
 // Wesley Chapel, FL — show the local wall-clock time the lead actually arrived,
 // with the ISO instant kept alongside so the record stays unambiguous.
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
+  // Individual component options, NOT dateStyle/timeStyle: ECMA-402 forbids
+  // combining those shorthands with `timeZoneName` and throws a TypeError if
+  // you try. Spelling the components out is what makes the zone label legal.
   const local = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
-    dateStyle: "medium",
-    timeStyle: "medium",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
     timeZoneName: "short",
   }).format(d);
   return `${local}  (${d.toISOString()})`;
 }
 
 /**
- * One lead as a plain-text block. `rep` is placed above the fold and called out
+ * One lead as a plain-text block. `rep` is placed above the fold and rendered
  * in the `?rep=` form it arrives as, because campaign attribution is the point
  * of the notification — an unattributed lead reads as "direct / organic"
  * rather than as a blank line you have to interpret.
  */
 export function formatLead(lead: WaitlistLead): string {
-  const rep = lead.rep
-    ? `?rep=${lead.rep}`
-    : "(none — direct / organic)";
+  const rep = lead.rep ? `?rep=${lead.rep}` : "(none — direct / organic)";
 
   return [
     `  Name        ${lead.name}`,
@@ -99,58 +90,43 @@ export function newLeadSubject(lead: WaitlistLead): string {
 }
 
 /**
- * POST one email to Resend. Resolves to an outcome; never rejects.
+ * Send one email through SendGrid. Resolves to an outcome; never rejects.
+ *
+ * SendGrid answers a successful send with 202 Accepted and puts the message id
+ * in the `x-message-id` response header — that id is what you search on in the
+ * SendGrid Activity Feed, so it is captured and logged rather than discarded.
  */
 export async function sendEmail(
   subject: string,
   text: string
 ): Promise<SendOutcome> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return { ok: false, reason: "RESEND_API_KEY is not set" };
-  }
+  const apiKey = process.env.SENDGRID_API_KEY;
+  const from = process.env.WAITLIST_FROM_EMAIL;
+  const to = process.env.WAITLIST_NOTIFY_TO;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), SEND_TIMEOUT_MS);
+  if (!apiKey) return { ok: false, reason: "SENDGRID_API_KEY is not set" };
+  if (!from) return { ok: false, reason: "WAITLIST_FROM_EMAIL is not set" };
+  if (!to) return { ok: false, reason: "WAITLIST_NOTIFY_TO is not set" };
 
   try {
-    const res = await fetch(RESEND_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: fromAddress(),
-        to: [toAddress()],
-        subject,
-        text,
-      }),
-      signal: controller.signal,
-    });
+    sgMail.setApiKey(apiKey);
+    const [response] = await sgMail.send({ to, from, subject, text });
 
-    const payload = (await res.json().catch(() => null)) as
-      | { id?: string; message?: string; name?: string }
-      | null;
+    const headers = (response?.headers ?? {}) as Record<string, string>;
+    const messageId = headers["x-message-id"] ?? "(no x-message-id header)";
+    const statusCode = response?.statusCode ?? 0;
 
-    if (!res.ok) {
-      const detail = payload?.message || payload?.name || `HTTP ${res.status}`;
-      return { ok: false, reason: `Resend rejected the send: ${detail}` };
+    if (statusCode < 200 || statusCode >= 300) {
+      return { ok: false, reason: `SendGrid returned HTTP ${statusCode}` };
     }
-    if (!payload?.id) {
-      return { ok: false, reason: "Resend accepted the send but returned no id" };
-    }
-    return { ok: true, id: payload.id };
+    return { ok: true, id: messageId, statusCode };
   } catch (err) {
-    const reason =
-      err instanceof Error && err.name === "AbortError"
-        ? `timed out after ${SEND_TIMEOUT_MS}ms`
-        : err instanceof Error
-          ? err.message
-          : String(err);
+    // SendGrid errors carry the useful detail in response.body.errors, not in
+    // the top-level message — surface it or the log just says "Bad Request".
+    let reason = err instanceof Error ? err.message : String(err);
+    const body = (err as { response?: { body?: unknown } })?.response?.body;
+    if (body) reason += ` — ${JSON.stringify(body)}`;
     return { ok: false, reason };
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -161,20 +137,34 @@ export async function sendEmail(
 export async function notifyNewWaitlistLead(
   lead: WaitlistLead
 ): Promise<SendOutcome> {
-  const body = [
-    `NEW LEAD — ${sourceLabel(lead.source)}`,
-    ``,
-    formatLead(lead),
-    ``,
-    `—`,
-    `Sent by the smartcity-website waitlist endpoint.`,
-  ].join("\n");
+  // The try wraps BODY CONSTRUCTION as well as the send. An earlier version
+  // only guarded the send, and a formatting bug (an illegal Intl option) threw
+  // straight past it and 500'd a request whose lead was already stored — the
+  // precise failure this module exists to prevent. Nothing between here and the
+  // return is allowed to escape.
+  let outcome: SendOutcome;
+  try {
+    const body = [
+      `NEW LEAD — ${sourceLabel(lead.source)}`,
+      ``,
+      formatLead(lead),
+      ``,
+      `—`,
+      `Sent by the smartcity-website waitlist endpoint.`,
+    ].join("\n");
 
-  const outcome = await sendEmail(newLeadSubject(lead), body);
+    outcome = await sendEmail(newLeadSubject(lead), body);
+  } catch (err) {
+    outcome = {
+      ok: false,
+      reason: `could not build the notification: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
 
   if (outcome.ok) {
     console.log(
-      `[notify] waitlist lead ${lead.id} emailed — resend_id=${outcome.id} source=${lead.source} rep=${lead.rep ?? "none"}`
+      `[notify] waitlist lead ${lead.id} emailed — sendgrid_id=${outcome.id} ` +
+        `status=${outcome.statusCode} source=${lead.source} rep=${lead.rep ?? "none"}`
     );
   } else {
     // Deliberately loud and distinct from a store failure: the lead IS saved.
@@ -197,32 +187,43 @@ export async function notifyWaitlistBacklog(
     return { ok: false, reason: "no leads to send" };
   }
 
-  const blocks = leads.map(
-    (lead, i) =>
-      `${"─".repeat(60)}\nLEAD ${i + 1} of ${leads.length}\n${"─".repeat(60)}\n${formatLead(lead)}`
-  );
+  // Same guarantee as notifyNewWaitlistLead: body construction is inside the try.
+  let outcome: SendOutcome;
+  try {
+    const rule = "─".repeat(60);
+    const blocks = leads.map(
+      (lead, i) =>
+        `${rule}\nLEAD ${i + 1} of ${leads.length}\n${rule}\n${formatLead(lead)}`
+    );
+    const attributed = leads.filter((l) => l.rep).length;
 
-  const attributed = leads.filter((l) => l.rep).length;
+    const body = [
+      `${leads.length} PENDING WAITLIST LEADS`,
+      ``,
+      `These were already in the database before notifications were wired up.`,
+      `${attributed} of ${leads.length} carry a ?rep= attribution.`,
+      ``,
+      ...blocks,
+      ``,
+      rule,
+      `Sent by scripts/backfillWaitlistNotify.cjs`,
+    ].join("\n");
 
-  const body = [
-    `${leads.length} PENDING WAITLIST LEADS`,
-    ``,
-    `These were already in the database before notifications were wired up.`,
-    `${attributed} of ${leads.length} carry a ?rep= attribution.`,
-    ``,
-    ...blocks,
-    ``,
-    `${"─".repeat(60)}`,
-    `Sent by scripts/backfillWaitlistNotify.cjs`,
-  ].join("\n");
-
-  const outcome = await sendEmail(
-    `[SmartCity] ${leads.length} pending waitlist leads — backlog export`,
-    body
-  );
+    outcome = await sendEmail(
+      `[SmartCity] ${leads.length} pending waitlist leads — backlog export`,
+      body
+    );
+  } catch (err) {
+    outcome = {
+      ok: false,
+      reason: `could not build the backlog notification: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
 
   if (outcome.ok) {
-    console.log(`[notify] backlog of ${leads.length} emailed — resend_id=${outcome.id}`);
+    console.log(
+      `[notify] backlog of ${leads.length} emailed — sendgrid_id=${outcome.id} status=${outcome.statusCode}`
+    );
   } else {
     console.error(`[notify] BACKLOG EMAIL FAILED — ${outcome.reason}`);
   }
