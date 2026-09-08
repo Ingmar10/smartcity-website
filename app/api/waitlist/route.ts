@@ -1,3 +1,4 @@
+import { notifyNewWaitlistLead } from "@/lib/notify";
 import { saveWaitlist } from "@/lib/waitlistStore";
 import { clientIpFrom } from "@/lib/rateLimit";
 
@@ -39,8 +40,12 @@ export async function POST(req: Request) {
   if (!SOURCES.has(source))
     return json({ error: "Invalid request." }, 400);
 
+  // ---- Store first -----------------------------------------------------------
+  // The try/catch closes around the WRITE ALONE, deliberately. Storing the lead
+  // is the only operation allowed to fail this request; nothing after it is.
+  let record;
   try {
-    const record = await saveWaitlist({
+    record = await saveWaitlist({
       name,
       email,
       source,
@@ -48,7 +53,6 @@ export async function POST(req: Request) {
       ip: clientIpFrom(req.headers),
       user_agent: req.headers.get("user-agent"),
     });
-    return json({ ok: true, id: record.id });
   } catch (err) {
     console.error("Waitlist store failure:", err);
     return json(
@@ -59,6 +63,20 @@ export async function POST(req: Request) {
       500
     );
   }
+
+  // ---- Then notify, best-effort ----------------------------------------------
+  // The lead is durably stored by this point. `notifyNewWaitlistLead` resolves
+  // to an outcome and never rejects, so a Resend outage cannot reach the catch
+  // above, cannot undo the row, and cannot turn a captured lead into a 500 that
+  // the visitor would see and retry. Its failure path is a loud server log.
+  //
+  // Awaited rather than fire-and-forget: a serverless instance can freeze the
+  // moment the response is returned, which would silently drop an un-awaited
+  // send. The response shape is unchanged either way, so the form's success
+  // branch — and the Meta pixel Lead event that will hang off it — is untouched.
+  await notifyNewWaitlistLead(record);
+
+  return json({ ok: true, id: record.id });
 }
 
 function json(payload: unknown, status = 200) {
