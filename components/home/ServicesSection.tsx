@@ -22,7 +22,7 @@ export default function ServicesSection() {
         <ul>
           <li>Price, brand and send proposals, with your floor price enforced</li>
           <li>Dealer logins that never see your cost or margin</li>
-          <li>Financing attached to the proposal, branded PDF, public quote view</li>
+          <li>Financing attached to the proposal, branded PDF proposal</li>
           <li>Bolt, the AI assistant, inside the app</li>
           <li>Connected to your CRM so no lead sits outside the rail</li>
         </ul>

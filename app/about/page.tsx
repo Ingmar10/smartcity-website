@@ -22,7 +22,7 @@ const chapters = [
   {
     year: "QuoteSmart",
     title: "A quoting rail, not a quoting toy.",
-    body: "QuoteSmart is the result: dealer logins with cost stripped at the server, floor-price enforcement that actually holds, dual-output quotes that keep the material list away from the customer, and a public quote view that closes. It's the rail every SmartCity lead runs on.",
+    body: "QuoteSmart is the result: dealer logins with cost stripped at the server, floor-price enforcement that actually holds, dual-output quotes that keep the material list away from the customer, and branded PDF proposals that close. It's the rail every SmartCity lead runs on.",
   },
   {
     year: "The platform",

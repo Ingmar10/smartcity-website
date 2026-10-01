@@ -73,7 +73,7 @@ export default function HomePage() {
                 "Dealer/reseller logins with scoped access",
                 "Floor-price enforcement and per-dealer overrides",
                 "Dual-output quotes: a clean customer proposal, separate from the internal material list",
-                "PDF proposals and a public customer-facing quote view",
+                "Branded PDF proposals",
               ]}
               cta={{ href: "/quotesmart", label: "Explore QuoteSmart" }}
               visual={

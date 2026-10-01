@@ -9,7 +9,7 @@ import StatusTag from "@/components/StatusTag";
 export const metadata: Metadata = {
   title: "QuoteSmart",
   description:
-    "QuoteSmart is the quoting platform for contractors and dealers — server-side cost stripping, floor-price enforcement, dual-output quotes, branded PDF proposals, and a public customer quote view.",
+    "QuoteSmart is the quoting platform for contractors and dealers — server-side cost stripping, floor-price enforcement, dual-output quotes, and branded PDF proposals.",
 };
 
 const features = [
@@ -35,7 +35,7 @@ const features = [
   },
   {
     title: "Role-based access",
-    body: "Five roles enforced by security rules. Dealer quote writes are forced through a callable function — no direct client writes.",
+    body: "Four roles enforced by security rules: Owner, Admin, Sales Rep and Dealer. Dealer quote writes are forced through a callable function — no direct client writes.",
   },
   {
     title: "Bolt AI, built in",
@@ -46,8 +46,8 @@ const features = [
     body: "Photo upload and per-rep quote attribution, so every quote is tied to the person who sent it.",
   },
   {
-    title: "Public quote view & PDF",
-    body: "Share a live customer-facing quote at a clean URL, or export a branded PDF proposal. Works offline as a PWA.",
+    title: "Branded PDF proposals",
+    body: "Export a customer-ready PDF proposal under the right brand. Works offline as a PWA, so you can quote from the truck or the roof.",
   },
 ];
 

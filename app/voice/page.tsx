@@ -168,7 +168,7 @@ export default function VoicePage() {
                 <ul className="space-y-3 rounded-2xl bg-white p-6 text-[0.95rem]">
                   {[
                     "Live on Ori Energy's inbound line",
-                    "Answers in English and Spanish",
+                    "Hands off to your team with the full record",
                     "Routes by trade and service type",
                     "Books straight into the calendar",
                   ].map((t) => (
