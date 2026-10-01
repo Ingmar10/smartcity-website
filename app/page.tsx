@@ -1,14 +1,19 @@
-import Hero from "@/components/Hero";
+import "./home.css";
+import Image from "next/image";
+import HomeHero from "@/components/home/HomeHero";
+import RailSwitcher from "@/components/home/RailSwitcher";
+import ServicesSection from "@/components/home/ServicesSection";
 import AlternatingRow from "@/components/AlternatingRow";
 import ScrollReveal from "@/components/ScrollReveal";
 import CTAButton from "@/components/CTAButton";
-import PhoneShot from "@/components/Screenshot";
 import EcosystemRow from "@/components/EcosystemRow";
 
 export default function HomePage() {
   return (
     <>
-      <Hero />
+      <HomeHero />
+
+      <RailSwitcher />
 
       {/* Trust strip */}
       <section className="border-y border-black/5 bg-canvas">
@@ -16,7 +21,7 @@ export default function HomePage() {
           <ScrollReveal>
             <p className="text-center text-sm font-medium uppercase tracking-[0.12em] text-subtle">
               Built and run by a licensed contractor — not a software company
-              guessing at the trades
+              guessing at the trades · Ori Energy runs live on the stack
             </p>
           </ScrollReveal>
         </div>
@@ -27,9 +32,9 @@ export default function HomePage() {
         <div className="container-content">
           <ScrollReveal>
             <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow">What we do</p>
+              <p className="eyebrow">What runs on the rail</p>
               <h2 className="mt-4 display-2">
-                One rail, from first touch to signed job.
+                Three pieces. One lead, start to signed.
               </h2>
               <p className="mx-auto mt-6 max-w-xl lede">
                 QuoteSmart is the center of everything we build. DialBolt feeds
@@ -37,6 +42,19 @@ export default function HomePage() {
               </p>
             </div>
           </ScrollReveal>
+
+          <div className="sc2 mt-16">
+            <div className="hero-shot">
+              <div className="glow2" aria-hidden="true" />
+              <Image
+                src="/screenshots/desktop.webp"
+                alt="QuoteSmart on desktop: sidebar navigation, a $51,500 pipeline card with win rate and margin, quotes sent and approved, recent activity, and pipeline stages"
+                width={1600}
+                height={1118}
+                sizes="(min-width: 1200px) 1136px, 100vw"
+              />
+            </div>
+          </div>
 
           <div className="mt-20 space-y-28 md:space-y-36">
             <AlternatingRow
@@ -51,10 +69,11 @@ export default function HomePage() {
               ]}
               cta={{ href: "/quotesmart", label: "Explore QuoteSmart" }}
               visual={
-                <PhoneShot
-                  src="/screenshots/quotesmart-dashboard.jpg"
-                  alt="QuoteSmart dashboard showing pipeline value and profit margin"
-                />
+                <div className="sc2">
+                  <div className="ph">
+                    <Image src="/screenshots/phone-dashboard.webp" alt="The QuoteSmart dashboard on iPhone: pipeline value, win rate, margin, quotes sent, and a needs-attention prompt" width={640} height={1221} sizes="336px" />
+                  </div>
+                </div>
               }
             />
 
@@ -70,6 +89,20 @@ export default function HomePage() {
                 "Rep-attributed so every close is tracked to the source",
               ]}
               cta={{ href: "/dialbolt", label: "See how DialBolt works" }}
+              visual={
+                <div className="sc2">
+                  <div className="thread">
+                    <p className="lab">A dead lead, five days later</p>
+                    <div className="msgs">
+                      <p className="m l">Hi Dana, still thinking about the roof? Your June number is good through Friday.</p>
+                      <p className="m r">What was it again?</p>
+                      <p className="m l">$16,550 all in. Thursday 9am to walk it?</p>
+                      <p className="m r">Thursday works</p>
+                    </div>
+                    <div className="foot"><span>Booked · Thursday 9:00a</span><span>Into QuoteSmart →</span></div>
+                  </div>
+                </div>
+              }
             />
 
             <AlternatingRow
@@ -78,15 +111,19 @@ export default function HomePage() {
               body="Bolt is the AI built into QuoteSmart — and the assistant in the corner of this page. It reads and edits quotes, customers, catalog, and financing, and keeps everyone pointed at the next step. Ask it anything about what we build."
               cta={{ href: "/quotesmart", label: "Meet Bolt in QuoteSmart" }}
               visual={
-                <PhoneShot
-                  src="/screenshots/bolt-panel.jpg"
-                  alt="The Bolt AI chat panel inside QuoteSmart, offering to summarize quotes and start new ones"
-                />
+                <div className="sc2">
+                  <div className="ph">
+                    <Image src="/screenshots/phone-bolt.webp" alt="The Bolt panel open over the QuoteSmart dashboard, suggesting actions like what needs me today and why is margin down" width={640} height={1221} sizes="336px" />
+                  </div>
+                </div>
               }
             />
           </div>
         </div>
       </section>
+
+      {/* What we build around QuoteSmart */}
+      <ServicesSection />
 
       {/* The SmartCity Ecosystem */}
       <EcosystemRow />

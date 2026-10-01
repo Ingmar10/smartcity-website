@@ -7,6 +7,7 @@ import StatusTag from "./StatusTag";
 import { ECOSYSTEM } from "@/lib/ecosystem";
 
 const topLinks = [
+  { href: "/#services", label: "Services" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
