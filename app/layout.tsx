@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import BoltWidget from "@/components/BoltWidget";
+import JsonLd from "@/components/JsonLd";
 import { COMPANY } from "@/lib/brand";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -37,13 +38,17 @@ export const metadata: Metadata = {
     url: COMPANY.siteUrl,
     siteName: "SmartCity Contractors",
     type: "website",
+    locale: "en_US",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "SmartCity Contractors: QuoteSmart quoting, automations and websites for the trades" }],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/og.png"],
     title: "SmartCity Contractors",
     description:
       "QuoteSmart for quoting. DialBolt for reviving dead leads. Every lead runs through QuoteSmart.",
   },
+  alternates: { canonical: "./" },
   robots: { index: true, follow: true },
 };
 
@@ -62,6 +67,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={jakarta.variable}>
       <body className="min-h-screen bg-white antialiased">
+        <JsonLd />
         <Nav />
         <main>{children}</main>
         <Footer />

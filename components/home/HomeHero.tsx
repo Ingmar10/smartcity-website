@@ -127,8 +127,10 @@ export default function HomeHero() {
 
         <div className="sch-hero-text">
           <p className="sch-eyebrow">SmartCity Contractors</p>
-          <h1 className="sch-h1 sch-line1">One rail.</h1>
-          <h1 className="sch-h1 sch-h1-grad sch-line2">Any business.</h1>
+          <h1 className="sch-h1-wrap">
+            <span className="sch-h1 sch-line1">One rail.</span>
+            <span className="sch-h1 sch-h1-grad sch-line2">Any business.</span>
+          </h1>
           <p className="sch-sub">
             QuoteSmart quoting software, GoHighLevel automations, and custom websites for contractors and local
             businesses, on one stack. Built by an operator who ran the jobs first.

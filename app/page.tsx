@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import "./home.css";
 import Image from "next/image";
 import HomeHero from "@/components/home/HomeHero";
@@ -7,6 +8,13 @@ import AlternatingRow from "@/components/AlternatingRow";
 import ScrollReveal from "@/components/ScrollReveal";
 import CTAButton from "@/components/CTAButton";
 import EcosystemRow from "@/components/EcosystemRow";
+
+export const metadata: Metadata = {
+  title: { absolute: "QuoteSmart quoting software, GHL automations & websites for contractors | SmartCity Contractors" },
+  description:
+    "SmartCity Contractors builds QuoteSmart, the quoting platform for solar, roofing and trades, plus GoHighLevel automations, DialBolt lead reactivation and custom websites. Built by a licensed Florida contractor.",
+  alternates: { canonical: "/" },
+};
 
 export default function HomePage() {
   return (
