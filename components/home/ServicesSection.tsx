@@ -41,7 +41,7 @@ export default function ServicesSection() {
           <p>Done-for-you SMS and email reactivation for the leads you already paid for.</p>
           <ul><li>TCPA-compliant, STOP and HELP built in</li><li>Booked appointments flow into QuoteSmart</li><li>Every close attributed to a rep</li></ul></div>
 
-        <div className="addon"><div className="top"><b>AI voice</b><span className="pill soon"><i></i>Coming soon</span></div>
+        <div className="addon"><div className="top"><b>AI voice</b><span className="pill live"><i></i>Live</span></div>
           <p>An inbound agent that answers, qualifies and books, day and night.</p>
           <ul><li>Routes by service and urgency</li><li>Books straight into your calendar</li><li>Hands off to your team with the full record</li></ul></div>
 
