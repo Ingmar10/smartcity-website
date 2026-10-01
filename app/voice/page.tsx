@@ -57,7 +57,7 @@ export default function VoicePage() {
     <>
       <PageHero
         eyebrow="SmartCity Voice"
-        status="soon"
+        status="live"
         title={
           <>
             You&apos;re too busy on the roof
@@ -68,7 +68,7 @@ export default function VoicePage() {
         }
         lede="Done-for-you inbound AI voice agents for contractors. They answer 24/7, qualify the lead, and book the appointment — so a missed call never turns into a lost job again."
       >
-        <CTAButton href="#waitlist">Join the waitlist</CTAButton>
+        <CTAButton href="/contact">Book a demo</CTAButton>
         <CTAButton href="#proven" variant="secondary">
           See it in action
         </CTAButton>
@@ -153,8 +153,8 @@ export default function VoicePage() {
                     Energy&apos;s phone right now.
                   </h2>
                   <p className="mt-4 leading-relaxed text-subtle">
-                    Sarah — our inbound voice agent — handles Ori Energy&apos;s
-                    calls live today: greeting callers, routing by service type,
+                    Maya — our voice agent — handles Ori Energy&apos;s calls
+                    live today: greeting callers, routing by service type,
                     and booking estimates around the clock. SmartCity Voice is
                     that exact system, cloned and tuned for your business.
                   </p>
@@ -192,17 +192,17 @@ export default function VoicePage() {
           <div className="mx-auto max-w-xl">
             <ScrollReveal>
               <div className="text-center">
-                <p className="eyebrow">Waitlist</p>
+                <p className="eyebrow">Get started</p>
                 <h2 className="mt-4 display-2">Stop missing calls.</h2>
                 <p className="mx-auto mt-5 max-w-md lede">
-                  Get on the list and we&apos;ll clone a voice agent for your
-                  business the moment we open the next batch.
+                  Tell us about your business and we&apos;ll clone a voice agent
+                  tuned to your trades, your service area and your calendar.
                 </p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
               <div className="mt-10">
-                <WaitlistForm source="voice-waitlist" cta="Join the Voice waitlist" />
+                <WaitlistForm source="voice-waitlist" cta="Request a voice agent" />
               </div>
             </ScrollReveal>
           </div>

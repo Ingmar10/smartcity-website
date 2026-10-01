@@ -47,7 +47,7 @@ export const ECOSYSTEM: EcosystemProduct[] = [
     tagline: "AI voice agents",
     blurb:
       "Done-for-you inbound AI voice that answers, qualifies, and books — 24/7.",
-    status: "soon",
+    status: "live",
   },
   {
     name: "SmartCity Payments",

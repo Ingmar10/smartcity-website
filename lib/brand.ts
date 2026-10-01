@@ -21,7 +21,7 @@ export const COMPANY = {
   // propagate to the Privacy Policy and Terms automatically.
   // ────────────────────────────────────────────────────────────────────────
   supportPhone: null as string | null,
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://smartctycontractors.com",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://smartcity.contractors",
 } as const;
 
 export function fullAddress(): string {

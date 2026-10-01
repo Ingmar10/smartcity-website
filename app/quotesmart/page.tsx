@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ScrollReveal from "@/components/ScrollReveal";
 import AlternatingRow from "@/components/AlternatingRow";
 import CTAButton from "@/components/CTAButton";
-import PhoneShot from "@/components/Screenshot";
+import { DeviceShot } from "@/components/Screenshot";
 import WaitlistForm from "@/components/WaitlistForm";
 import StatusTag from "@/components/StatusTag";
 
@@ -77,9 +77,10 @@ export default function QuoteSmartPage() {
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
-              <PhoneShot
-                src="/screenshots/quotesmart-dashboard.jpg"
-                alt="QuoteSmart dashboard on mobile, showing pipeline value, profit margin, and the Ask Bolt assistant"
+              <DeviceShot
+                src="/screenshots/phone-dashboard.webp"
+                alt="QuoteSmart dashboard on iPhone: pipeline value, win rate, margin, quotes sent, and a needs-attention prompt"
+                priority
               />
             </ScrollReveal>
           </div>
@@ -120,35 +121,35 @@ export default function QuoteSmartPage() {
       <section className="section-pad pt-8">
         <div className="container-content space-y-28 md:space-y-36">
           <AlternatingRow
-            eyebrow="Branded proposals"
-            title="Your brand on the outside. Your margin on the inside."
-            body="Every proposal goes out under the right brand — the dealer's or the parent's — with a clean, customer-ready layout. The material list and cost build-up stay internal, always."
+            eyebrow="Bolt AI"
+            title="Ask it what needs you today."
+            body="Bolt reads the screen you're on and acts on it. Pull up what needs attention, find out why margin is down, or draft the follow-ups, without leaving the quote flow."
             bullets={[
-              "Logos, colors, and typography per brand",
-              "Puppeteer-rendered PDF export",
-              "Customer-facing quote at a public link",
+              "What needs me today?",
+              "Why is margin down?",
+              "Draft the cold-lead nudges",
             ]}
             visual={
-              <PhoneShot
-                src="/screenshots/proposal-branding.jpg"
-                alt="QuoteSmart proposal branding settings — logos, default cover, brand colors, and typography"
+              <DeviceShot
+                src="/screenshots/phone-bolt.webp"
+                alt="Bolt AI panel open over the QuoteSmart dashboard, suggesting actions like what needs me today and why is margin down"
               />
             }
           />
           <AlternatingRow
             flip
-            eyebrow="Your team"
-            title="Reps, roles, and attribution that actually hold."
-            body="Rep profiles, quote attribution per person, and enforced roles — Owner, Admin, Sales Rep, Dealer. Dealer writes are routed through a secured function so quotes can't be tampered with client-side."
+            eyebrow="One workspace"
+            title="Quotes, customers, catalog, inbox. One menu."
+            body="Everything a quote touches lives in the same app: pricing and catalog, the CRM inbox and automations, and the settings that control branding, team roles and dealers. Roles are enforced server-side, and dealer writes go through a secured function so quotes can't be tampered with client-side."
             bullets={[
-              "Invite members and assign roles",
-              "Owner / Admin / Sales Rep / Dealer access",
-              "Measurement PDF import pipeline",
+              "Quotes, customers, catalog and inventory",
+              "Inbox and automations built in",
+              "Branding, team, dealers and integrations in settings",
             ]}
             visual={
-              <PhoneShot
-                src="/screenshots/team.jpg"
-                alt="QuoteSmart team management — add members, assign roles, and manage access"
+              <DeviceShot
+                src="/screenshots/phone-nav.webp"
+                alt="QuoteSmart navigation menu: dashboard, quotes, customers, catalog, inventory, inbox, automations, branding, team and dealers"
               />
             }
           />
