@@ -78,6 +78,12 @@
 .sc2 .sch-badge-s{font-size:12px}
 .sc2 .sch-badge.a{top:70px;left:-80px}
 .sc2 .sch-badge.b{bottom:100px;right:-80px}}
+.sc2 .sch-nextcue{position:absolute;left:0;right:0;bottom:70px;z-index:40;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--sc-brand);white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden}
+.sc2 .sch-nextcue svg{width:20px;height:20px;animation:sch-nudge 1.4s ease-in-out infinite}
+@keyframes sch-nudge{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(5px);opacity:1}}
+@media(max-width:1023px){.sc2 .sch-inner{padding-bottom:104px}}
+@media(min-width:1024px){.sc2 .sch-nextcue{bottom:28px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){.sc2 .sch-nextcue svg{animation:none}}
 .sc2 .rail-sec{position:relative;overflow:hidden;padding:clamp(64px,7vw,104px) 0 clamp(64px,7vw,96px)}
 .sc2 .rail-sec .glow{pointer-events:none;position:absolute;left:50%;top:-220px;height:640px;width:1080px;max-width:none;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(107,63,208,.13),transparent)}
 .sc2 .rail-head{position:relative;margin:0 auto;max-width:800px;text-align:center}

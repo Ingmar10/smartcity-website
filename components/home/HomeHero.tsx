@@ -61,6 +61,7 @@ export default function HomeHero() {
             gsap.set(".sch-hero-text, .sch-cta", { autoAlpha: 0 });
             gsap.set(".sch-card", { y: 0, autoAlpha: 1 });
             gsap.set(revealSel, { autoAlpha: 1 });
+            gsap.set(".sch-nextcue", { autoAlpha: 0 });
             return;
           }
           // Phones get a tighter cut: shorter pin, no dead holds, and no pullback
@@ -74,6 +75,7 @@ export default function HomeHero() {
           gsap.set(".sch-line2", { autoAlpha: 1, clipPath: "inset(0 100% 0 0)" });
           gsap.set(".sch-card", { y: () => innerHeight + 200, autoAlpha: 1 });
           gsap.set(revealSel, { autoAlpha: 0 });
+          gsap.set(".sch-nextcue", { autoAlpha: 0, y: 12 });
           gsap.set(".sch-cta", { autoAlpha: 0, scale: 0.85, filter: "blur(24px)" });
 
           gsap
@@ -103,6 +105,7 @@ export default function HomeHero() {
             .fromTo(".sch-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=1.2")
             .fromTo(".sch-copy-col", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
             .fromTo(".sch-brand-col", { x: 50, autoAlpha: 0, scale: 0.85 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
+            .to(".sch-nextcue", { autoAlpha: 1, y: 0, ease: "power2.out", duration: 0.6 }, "<0.9")
             .to(".sch-mock-scroll", { rotationY: 10, rotationX: 3, duration: 1.4, ease: "sine.inOut" }, "+=0.3")
             .to(shots[0], { opacity: 0, duration: 0.8 }, "<0.4")
             .to(shots[1], { opacity: 1, duration: 0.8 }, "<")
@@ -117,7 +120,7 @@ export default function HomeHero() {
             tl.to({}, { duration: 0.4 })
               .set(".sch-hero-text", { autoAlpha: 0 })
               .set(".sch-cta", { autoAlpha: 1 })
-              .to([".sch-mock-scroll", ".sch-badge", ".sch-copy-col", ".sch-brand-col"], { y: -40, autoAlpha: 0, ease: "power2.in", duration: 0.8, stagger: 0.04 }, "exit")
+              .to([".sch-nextcue", ".sch-mock-scroll", ".sch-badge", ".sch-copy-col", ".sch-brand-col"], { y: -40, autoAlpha: 0, ease: "power2.in", duration: 0.8, stagger: 0.04 }, "exit")
               .to(".sch-card", { y: () => -innerHeight - 300, ease: "power3.in", duration: 1.4 }, "exit+=0.2")
               .to(".sch-cta", { scale: 1, filter: "blur(0px)", ease: "expo.out", duration: 1.2 }, "exit+=0.6");
             return;
@@ -127,7 +130,7 @@ export default function HomeHero() {
             .set(".sch-hero-text", { autoAlpha: 0 })
             .set(".sch-cta", { autoAlpha: 1 })
             .to({}, { duration: 1.2 })
-            .to([".sch-mock-scroll", ".sch-badge", ".sch-copy-col", ".sch-brand-col"], { scale: 0.9, y: -40, z: -200, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05 })
+            .to([".sch-nextcue", ".sch-mock-scroll", ".sch-badge", ".sch-copy-col", ".sch-brand-col"], { scale: 0.9, y: -40, z: -200, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05 })
             .to(".sch-card", { width: "85vw", height: "85svh", borderRadius: "40px", ease: "expo.inOut", duration: 1.8 }, "pullback")
             .to(".sch-cta", { scale: 1, filter: "blur(0px)", ease: "expo.inOut", duration: 1.8 }, "pullback")
             .to(".sch-card", { y: () => -innerHeight - 300, ease: "power3.in", duration: 1.5 });
@@ -203,6 +206,10 @@ export default function HomeHero() {
                 <div className="sch-copy-cta"><Link href="/contact" className="btn btn-p">Book a demo</Link></div>
               </div>
             </div>
+            <p className="sch-nextcue" aria-hidden="true">
+              <span>Keep scrolling</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+            </p>
           </div>
         </div>
       </div>
