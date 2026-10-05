@@ -51,7 +51,11 @@ export default function HomeHero() {
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
       mm.add(
-        { reduce: "(prefers-reduced-motion: reduce)", full: "(prefers-reduced-motion: no-preference)" },
+        {
+          reduce: "(prefers-reduced-motion: reduce)",
+          full: "(prefers-reduced-motion: no-preference)",
+          mobile: "(max-width: 767px)",
+        },
         (c) => {
           if (c.conditions?.reduce) {
             gsap.set(".sch-hero-text, .sch-cta", { autoAlpha: 0 });
@@ -59,7 +63,11 @@ export default function HomeHero() {
             gsap.set(revealSel, { autoAlpha: 1 });
             return;
           }
-          const isMobile = innerWidth < 768;
+          // Phones get a tighter cut: shorter pin, no dead holds, and no pullback
+          // (on a phone the card is already ~full-screen, so the pullback reads as
+          // a frozen blank card). Desktop timing is unchanged.
+          const isMobile = !!c.conditions?.mobile;
+          const scrollLength = isMobile ? () => Math.round(innerHeight * 4.6) : () => SCROLL_LENGTH;
 
           gsap.set(".sch-line1", { autoAlpha: 0, y: 60, scale: 0.88, filter: "blur(18px)" });
           gsap.set(".sch-eyebrow, .sch-sub, .sch-scrollcue", { autoAlpha: 0, y: 20 });
@@ -79,18 +87,19 @@ export default function HomeHero() {
             scrollTrigger: {
               trigger: el,
               start: "top top",
-              end: `+=${SCROLL_LENGTH}`,
+              end: () => `+=${scrollLength()}`,
               pin: true,
-              scrub: 1,
+              scrub: isMobile ? 0.6 : 1,
               anticipatePin: 1,
               invalidateOnRefresh: true,
             },
           });
 
-          tl.to([".sch-hero-text", ".sch-grid"], { scale: 1.12, filter: "blur(18px)", opacity: 0.15, ease: "power2.inOut", duration: 2 }, 0)
-            .to(".sch-card", { y: 0, ease: "power3.inOut", duration: 2 }, 0)
-            .to(".sch-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power3.inOut", duration: 1.5 })
-            .fromTo(".sch-mock-scroll", { y: 300, z: -500, rotationX: 50, rotationY: -30, autoAlpha: 0, scale: 0.6 }, { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 2.5 }, "-=0.8")
+          const rise = isMobile ? 1.6 : 2;
+          tl.to([".sch-hero-text", ".sch-grid"], { scale: 1.12, filter: "blur(18px)", opacity: 0.15, ease: "power2.inOut", duration: rise }, 0)
+            .to(".sch-card", { y: 0, ease: "power3.inOut", duration: rise }, 0)
+            .to(".sch-card", { width: "100%", height: "100%", borderRadius: "0px", ease: "power3.inOut", duration: isMobile ? 0.5 : 1.5 })
+            .fromTo(".sch-mock-scroll", { y: 300, z: -500, rotationX: 50, rotationY: -30, autoAlpha: 0, scale: 0.6 }, { y: 0, z: 0, rotationX: 0, rotationY: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: isMobile ? 2 : 2.5 }, "-=0.8")
             .fromTo(".sch-badge", { y: 100, autoAlpha: 0, scale: 0.7, rotationZ: -10 }, { y: 0, autoAlpha: 1, scale: 1, rotationZ: 0, ease: "back.out(1.5)", duration: 1.5, stagger: 0.2 }, "-=1.2")
             .fromTo(".sch-copy-col", { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, ease: "power4.out", duration: 1.5 }, "-=1.5")
             .fromTo(".sch-brand-col", { x: 50, autoAlpha: 0, scale: 0.85 }, { x: 0, autoAlpha: 1, scale: 1, ease: "expo.out", duration: 1.5 }, "<")
@@ -100,13 +109,26 @@ export default function HomeHero() {
             .to(".sch-mock-scroll", { rotationY: -10, rotationX: 3, duration: 1.4, ease: "sine.inOut" })
             .to(shots[1], { opacity: 0, duration: 0.8 }, "<0.4")
             .to(shots[2], { opacity: 1, duration: 0.8 }, "<")
-            .to(".sch-mock-scroll", { rotationY: 0, rotationX: 0, duration: 1.2, ease: "sine.inOut" })
-            .to({}, { duration: 1 })
+            .to(".sch-mock-scroll", { rotationY: 0, rotationX: 0, duration: 1.2, ease: "sine.inOut" });
+
+          if (isMobile) {
+            // Short beat on the last screen, then the card lifts away while its
+            // contents fade, and the CTA sharpens in behind it. No empty card.
+            tl.to({}, { duration: 0.4 })
+              .set(".sch-hero-text", { autoAlpha: 0 })
+              .set(".sch-cta", { autoAlpha: 1 })
+              .to([".sch-mock-scroll", ".sch-badge", ".sch-copy-col", ".sch-brand-col"], { y: -40, autoAlpha: 0, ease: "power2.in", duration: 0.8, stagger: 0.04 }, "exit")
+              .to(".sch-card", { y: () => -innerHeight - 300, ease: "power3.in", duration: 1.4 }, "exit+=0.2")
+              .to(".sch-cta", { scale: 1, filter: "blur(0px)", ease: "expo.out", duration: 1.2 }, "exit+=0.6");
+            return;
+          }
+
+          tl.to({}, { duration: 1 })
             .set(".sch-hero-text", { autoAlpha: 0 })
             .set(".sch-cta", { autoAlpha: 1 })
             .to({}, { duration: 1.2 })
             .to([".sch-mock-scroll", ".sch-badge", ".sch-copy-col", ".sch-brand-col"], { scale: 0.9, y: -40, z: -200, autoAlpha: 0, ease: "power3.in", duration: 1.2, stagger: 0.05 })
-            .to(".sch-card", { width: isMobile ? "92vw" : "85vw", height: isMobile ? "92svh" : "85svh", borderRadius: isMobile ? "32px" : "40px", ease: "expo.inOut", duration: 1.8 }, "pullback")
+            .to(".sch-card", { width: "85vw", height: "85svh", borderRadius: "40px", ease: "expo.inOut", duration: 1.8 }, "pullback")
             .to(".sch-cta", { scale: 1, filter: "blur(0px)", ease: "expo.inOut", duration: 1.8 }, "pullback")
             .to(".sch-card", { y: () => -innerHeight - 300, ease: "power3.in", duration: 1.5 });
         },
