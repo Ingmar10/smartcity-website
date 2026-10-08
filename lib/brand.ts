@@ -6,6 +6,12 @@ export const COMPANY = {
   legalName: "SmartCity Contractors LLC",
   shortName: "SmartCity Contractors",
   // Policy / legal contact channel (interim sole channel until the phone is live).
+  // NOTE: these stay on smartctycontractors.com ON PURPOSE. The site moved to
+  // smartcity.contractors, but the mailbox has not. Because `supportPhone` is
+  // still null, this address is the ONLY contact channel on the DialBolt
+  // Privacy Policy and Terms — pointing it at a domain with no MX would leave
+  // the TCPA policies with no working contact. Swap only once mail is actually
+  // receiving on the new domain, and keep the old domain registered until then.
   policyEmail: "contact@smartctycontractors.com",
   generalEmail: "contact@smartctycontractors.com",
   mailingAddress: {

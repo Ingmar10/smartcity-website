@@ -1,3 +1,4 @@
+import { COMPANY } from "@/lib/brand";
 import { saveWaitlist } from "@/lib/waitlistStore";
 import { clientIpFrom } from "@/lib/rateLimit";
 
@@ -53,8 +54,7 @@ export async function POST(req: Request) {
     console.error("Waitlist store failure:", err);
     return json(
       {
-        error:
-          "We couldn't add you just now. Please try again, or email contact@smartctycontractors.com.",
+        error: `We couldn't add you just now. Please try again, or email ${COMPANY.generalEmail}.`,
       },
       500
     );

@@ -1,3 +1,4 @@
+import { COMPANY } from "@/lib/brand";
 import { saveConsent } from "@/lib/consentStore";
 import {
   checkRateLimit,
@@ -102,8 +103,7 @@ export async function POST(req: Request) {
     console.error("Consent store failure:", err);
     return json(
       {
-        error:
-          "We couldn't record your consent just now. Please try again, or email contact@smartctycontractors.com.",
+        error: `We couldn't record your consent just now. Please try again, or email ${COMPANY.policyEmail}.`,
       },
       500
     );

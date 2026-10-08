@@ -3,7 +3,7 @@
 Marketing site for **SmartCity Contractors**, publisher of **QuoteSmart** (the
 quoting platform), **DialBolt** (dead-lead reactivation), and **Bolt** (the AI
 assistant). Built as a coded stack, deployed to Vercel at
-`smartctycontractors.com`.
+`smartcity.contractors`.
 
 ## Stack
 - **Next.js 14** (App Router) + **TypeScript**
@@ -58,7 +58,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** (neve
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Yes (for Bolt) | Claude API key. Powers `/api/bolt`. |
 | `POSTGRES_URL` | Yes (before launch) | Auto-set when you provision Vercel Postgres. Stores consent records. |
-| `NEXT_PUBLIC_SITE_URL` | Optional | Canonical/OG URL. Defaults to `https://smartctycontractors.com`. |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Canonical/OG URL. Defaults to `https://smartcity.contractors`. |
 
 ## Deploy (Vercel)
 1. Push to GitHub (`Ingmar10/smartcity-website`, public).
@@ -74,9 +74,47 @@ Set these in **Vercel → Project → Settings → Environment Variables** (neve
    submit a real record.
 5. Deploy, test on the `*.vercel.app` URL, then point DNS.
 
-## DNS
-Point `smartctycontractors.com` (and `www`) to Vercel per the records Vercel
-shows in **Settings → Domains**. Do this only after the site is tested.
+## DNS / domains
+Canonical host is the **apex, `smartcity.contractors`** — no `www`. This is a
+deliberate choice: the point of a `.contractors` gTLD is that the bare name
+reads as a phrase, and `www.` undercuts it. `www.smartcity.contractors` should
+301/308 *to* the apex, not the other way round.
+
+> **Vercel defaults the other way.** When the domain was added it made `www` the
+> primary and pointed the apex at it. Set the apex as primary in
+> **Settings → Domains** so the redirect runs apex-ward. `NEXT_PUBLIC_SITE_URL`
+> must match whichever host actually serves 200 — if these two ever disagree,
+> every canonical and OG tag points at a URL that redirects.
+
+`smartctycontractors.com` is the previous domain and **must stay registered**:
+
+- `contact@smartctycontractors.com` is still the policy/legal contact on the
+  DialBolt Privacy Policy and Terms, and with `COMPANY.supportPhone` still
+  `null` it is the *only* contact channel there. Letting the domain lapse would
+  silently break it. Keep the mailbox and watch the renewal date.
+- The A2P 10DLC campaign was filed against it, so its consent URL should keep
+  resolving.
+
+Once mail is actually receiving on the new domain, swap `policyEmail` /
+`generalEmail` in `lib/brand.ts` and everything that renders them follows.
+
+## ⚠️ Domain cutover — sequencing with A2P 10DLC
+The campaign is **in carrier verification, filed against
+`smartctycontractors.com`**. Carrier reviewers load the filed opt-in URL, so do
+not 301 the old domain or ship the new canonical until the campaign is approved.
+
+Order of operations:
+1. Add `smartcity.contractors` in Vercel as an *additional* domain — both
+   resolve, neither redirects. Safe during review.
+2. Wait for campaign approval.
+3. Set `NEXT_PUBLIC_SITE_URL=https://smartcity.contractors` in Vercel, merge this
+   branch, then 301 the old domain.
+
+Note: `.contractors` is a newer gTLD and carrier spam filters weight those more
+suspiciously than `.com`. Test SMS link deliverability across carriers before
+putting `smartcity.contractors` links in DialBolt messages — and consider
+keeping the `.com` as the SMS link domain. Changing the link domain may warrant
+a campaign update.
 
 ## ⚠️ Before A2P 10DLC filing — required swaps
 - [ ] **DialBolt support phone.** The Twilio line isn't provisioned yet. Set
