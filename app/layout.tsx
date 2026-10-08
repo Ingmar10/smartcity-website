@@ -3,7 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import BoltWidget from "@/components/BoltWidget";
+import Script from "next/script";
 import JsonLd from "@/components/JsonLd";
 import { COMPANY } from "@/lib/brand";
 
@@ -71,7 +71,8 @@ export default function RootLayout({
         <Nav />
         <main>{children}</main>
         <Footer />
-        <BoltWidget />
+        {/* Bolt: the same assistant as Bolt HQ, with a public front-desk badge (answers, captures and books leads into GHL). */}
+        <Script src="https://hq.smartcity.contractors/widget.js" data-site="smartcity" strategy="afterInteractive" />
       </body>
     </html>
   );
