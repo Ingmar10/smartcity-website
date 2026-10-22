@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { COMPANY } from "@/lib/brand";
 
-// Lightweight, dependency-free contact form. On submit it composes a prefilled
-// email to the company inbox (opens the visitor's mail client). This keeps the
-// form genuinely functional with no backend/email service wired up yet; it can
-// be pointed at an API route or CRM later without changing the UI.
+// Contact form. Posts to /api/contact, which stores the message in the site's
+// database and copies it into the SmartCity Ingmar GHL sub-account (contact,
+// note and a follow-up task). It used to open the visitor's mail app instead,
+// which silently lost every message from anyone without one set up.
 
 const interests = [
   "QuoteSmart demo",
@@ -15,25 +15,51 @@ const interests = [
   "Something else",
 ];
 
+type Status = "idle" | "sending" | "sent" | "error";
+
 export default function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [interest, setInterest] = useState(interests[0]);
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [error, setError] = useState("");
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const subject = `Website inquiry — ${interest}`;
-    const body = [
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Interested in: ${interest}`,
-      "",
-      message,
-    ].join("\n");
-    window.location.href = `mailto:${COMPANY.generalEmail}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
+    if (status === "sending") return;
+    setStatus("sending");
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, interest, message }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setError(data.error || `Something went wrong. Please email ${COMPANY.generalEmail}.`);
+        setStatus("error");
+        return;
+      }
+      setStatus("sent");
+    } catch {
+      setError(`We couldn't reach the server. Please try again, or email ${COMPANY.generalEmail}.`);
+      setStatus("error");
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <div className="card p-6 md:p-8" role="status">
+        <p className="text-sm font-semibold uppercase tracking-[0.12em] text-brand">
+          Message sent
+        </p>
+        <p className="mt-3 text-lg text-ink">
+          Thanks{name ? `, ${name.split(" ")[0]}` : ""}. We got it and we&apos;ll get back to you soon.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -100,11 +126,18 @@ export default function ContactForm() {
           />
         </div>
 
+        {status === "error" && error ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
+
         <button
           type="submit"
-          className="w-full rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-white transition-all hover:bg-brand-dark"
+          disabled={status === "sending"}
+          className="w-full rounded-full bg-brand px-6 py-3.5 text-base font-semibold text-white transition-all hover:bg-brand-dark disabled:cursor-wait disabled:opacity-70"
         >
-          Send message
+          {status === "sending" ? "Sending…" : "Send message"}
         </button>
       </div>
     </form>

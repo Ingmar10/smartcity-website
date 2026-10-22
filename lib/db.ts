@@ -35,7 +35,7 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   return getPool().query<T>(text, params as never[]);
 }
 
-// Idempotent schema init. Creates both tables the app writes to, so a freshly
+// Idempotent schema init. Creates every table the app writes to, so a freshly
 // provisioned database self-heals on the first API call. The `ensured` flag
 // caches success for a warm serverless instance and resets on cold start.
 let ensured = false;
@@ -69,7 +69,20 @@ export async function ensureTables(): Promise<void> {
     );
   `);
 
-  // Only cache success after both statements complete, so a failure retries on
+  await query(`
+    CREATE TABLE IF NOT EXISTS contact_submissions (
+      id UUID PRIMARY KEY,
+      created_at TIMESTAMPTZ NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      interest TEXT,
+      message TEXT NOT NULL,
+      ip TEXT,
+      user_agent TEXT
+    );
+  `);
+
+  // Only cache success after every statement completes, so a failure retries on
   // the next call rather than being silently skipped.
   ensured = true;
 }

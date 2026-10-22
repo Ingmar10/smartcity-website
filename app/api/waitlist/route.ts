@@ -1,5 +1,6 @@
 import { COMPANY } from "@/lib/brand";
 import { saveWaitlist } from "@/lib/waitlistStore";
+import { forwardLead } from "@/lib/leadForward";
 import { clientIpFrom } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -48,6 +49,16 @@ export async function POST(req: Request) {
       rep,
       ip: clientIpFrom(req.headers),
       user_agent: req.headers.get("user-agent"),
+    });
+    // Best-effort copy into the SmartCity Ingmar GHL sub-account; never throws.
+    await forwardLead({
+      kind: "waitlist",
+      id: record.id,
+      created_at: record.created_at,
+      name: record.name,
+      email: record.email,
+      source: record.source,
+      rep: record.rep,
     });
     return json({ ok: true, id: record.id });
   } catch (err) {

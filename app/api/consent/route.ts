@@ -1,5 +1,6 @@
 import { COMPANY } from "@/lib/brand";
 import { saveConsent } from "@/lib/consentStore";
+import { forwardLead } from "@/lib/leadForward";
 import {
   checkRateLimit,
   clientIpFrom,
@@ -96,6 +97,17 @@ export async function POST(req: Request) {
       ip,
       user_agent: userAgent,
       tcpa_consent: tcpaConsent,
+    });
+    // Best-effort copy into the SmartCity Ingmar GHL sub-account. The stored
+    // record above stays the compliance artifact; this never throws.
+    await forwardLead({
+      kind: "consent",
+      id: record.id,
+      created_at: record.created_at,
+      name: record.name,
+      phone: record.phone,
+      rep: record.rep,
+      tcpa_consent: record.tcpa_consent,
     });
     return json({ ok: true, id: record.id });
   } catch (err) {
