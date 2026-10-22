@@ -12,6 +12,10 @@
 //   rm .env.backfill
 //
 // Prints counts and record ids only, never names, phones or emails.
+//
+// NOTE (Oct 2026): POSTGRES_URL is a sensitive Vercel variable, so `vercel env pull`
+// returns a placeholder. Use the server route instead:
+//   POST https://smartcity.contractors/api/admin/backfill-leads?dry=1   (header x-smartcity-key)
 
 const { Pool } = require("pg");
 
